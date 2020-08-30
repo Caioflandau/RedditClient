@@ -1,19 +1,12 @@
 package com.caiolandau.devigetredditclient.home.view
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.dummy.DummyContent
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
@@ -21,6 +14,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
 import java.lang.ref.WeakReference
+
 
 /**
  * An activity representing a list of RedditPosts. This activity
@@ -34,7 +28,9 @@ class PostListActivityWrapper(
     activity: IViewModelActivity<PostListViewModel>
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
-    private val weakActivity: WeakReference<IViewModelActivity<PostListViewModel>> = WeakReference(activity)
+    private val weakActivity: WeakReference<IViewModelActivity<PostListViewModel>> = WeakReference(
+        activity
+    )
     private val activity: IViewModelActivity<PostListViewModel>?
         get() = weakActivity.get()
 
@@ -63,23 +59,25 @@ class PostListActivityWrapper(
 
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
-            .observe(this) {
+            .observe(this) { posts ->
                 findViewById<RecyclerView>(R.id.item_list)?.apply {
-                    setupRecyclerView(this, DummyContent.ITEMS)
+                    setupRecyclerView(this, posts)
                 }
             }
     }
 
     private fun setupRecyclerView(
         recyclerView: RecyclerView,
-        posts: MutableList<DummyContent.DummyItem>
+        posts: List<RedditPost>
     ) = activity?.apply {
-        recyclerView.adapter =
-            SimpleItemRecyclerViewAdapter(
-                this,
-                posts,
-                twoPane
+        recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                context,
+                DividerItemDecoration.VERTICAL
             )
+        )
+        recyclerView.adapter =
+            PostRecyclerViewAdapter(posts)
     }
 }
 

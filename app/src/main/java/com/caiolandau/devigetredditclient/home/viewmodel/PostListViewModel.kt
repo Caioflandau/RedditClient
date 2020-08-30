@@ -38,7 +38,7 @@ class PostListViewModel(
                 add(
                     RedditPost(
                         title = "Reddit Post Title",
-                        author = "The author",
+                        author = "Author_1",
                         entryDate = "just now",
                         thumbnailUrl = null,
                         numOfComments = 3,
@@ -47,8 +47,8 @@ class PostListViewModel(
                 )
                 add(
                     RedditPost(
-                        title = "Reddit Post Title 2",
-                        author = "The author 2",
+                        title = "Reddit Post Title 2 - Very long lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+                        author = "Author_2",
                         entryDate = "3 min ago",
                         thumbnailUrl = null,
                         numOfComments = 5,
@@ -57,7 +57,6 @@ class PostListViewModel(
                 )
             })
                 .map { it.toList() }
-                .delay(8, TimeUnit.SECONDS, schedulerProvider.io())
                 .subscribe(::postValue)
         }
     )
