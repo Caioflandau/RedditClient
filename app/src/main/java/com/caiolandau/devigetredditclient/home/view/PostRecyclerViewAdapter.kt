@@ -1,7 +1,5 @@
 package com.caiolandau.devigetredditclient.home.view
 
-import android.content.Intent
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,37 +7,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.dummy.DummyContent
 import com.caiolandau.devigetredditclient.home.model.RedditPost
-import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
-import com.caiolandau.devigetredditclient.util.IViewModelActivity
 
-class PostRecyclerViewAdapter(
-    private val values: List<RedditPost>
-) : RecyclerView.Adapter<PostRecyclerViewAdapter.ViewHolder>() {
+class PostRecyclerViewAdapter : RecyclerView.Adapter<PostRecyclerViewAdapter.ViewHolder>() {
+    private var posts: List<RedditPost> = emptyList()
 
-//    init {
-//        onClickListener = View.OnClickListener { v ->
-//            val item = v.tag as RedditPost
-//            if (twoPane) {
-//                val fragment = PostDetailFragment()
-//                    .apply {
-//                        arguments = Bundle().apply {
-//                            putString(PostDetailFragment.ARG_ITEM_ID, item.id)
-//                        }
-//                    }
-//                parentActivity.getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .replace(R.id.item_detail_container, fragment)
-//                    .commit()
-//            } else {
-//                val intent = Intent(v.context, PostDetailActivity::class.java).apply {
-//                    putExtra(PostDetailFragment.ARG_ITEM_ID, item.id)
-//                }
-//                v.context.startActivity(intent)
-//            }
-//        }
-//    }
+    var onItemClickListener: ((Int) -> Unit) = {}
+
+    fun setPosts(newPosts: List<RedditPost>) {
+        posts = newPosts
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -48,13 +25,17 @@ class PostRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val post = values[position]
+        val post = posts[position]
         holder.txtPosterName.text = post.author
         holder.txtPostTime.text = post.entryDate
         holder.txtPostTitle.text = post.title
+
+        holder.itemView.setOnClickListener {
+            onItemClickListener(position)
+        }
     }
 
-    override fun getItemCount() = values.size
+    override fun getItemCount() = posts.size
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val txtPosterName: TextView = view.findViewById(R.id.txtPosterName)

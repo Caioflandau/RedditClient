@@ -1,5 +1,6 @@
 package com.caiolandau.devigetredditclient.home.view
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -7,7 +8,6 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -17,12 +17,12 @@ import java.lang.ref.WeakReference
 
 
 /**
- * An activity representing a list of RedditPosts. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a [PostDetailActivity] representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
+ * An activity representing a list of RedditPosts. This activity has different presentations for
+ * handset and tablet-size devices.
+ * On handsets, the activity presents a list of items, which when touched, lead to a
+ * [PostDetailActivity] representing item details.
+ * On tablets, the activity presents the list of items and item details side-by-side
+ * using two vertical panes.
  */
 class PostListActivityWrapper(
     activity: IViewModelActivity<PostListViewModel>
@@ -34,50 +34,78 @@ class PostListActivityWrapper(
     private val activity: IViewModelActivity<PostListViewModel>?
         get() = weakActivity.get()
 
+    private var recyclerViewAdapter: PostRecyclerViewAdapter? = null
+
     /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
+     * Whether or not the activity is in two-pane mode, i.e. running on a tablet device.
      */
     private var twoPane: Boolean = false
 
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
+        setupRecyclerView()
+
         findViewById<FloatingActionButton>(R.id.fab)?.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
 
         if (findViewById<NestedScrollView>(R.id.frmPostDetailContainer) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
+            // The detail container will be present only in the large-screen layouts (res/values-w900dp).
+            // If this view is present, then the activity should be in two-pane mode.
             twoPane = true
         }
 
-        bindOutput(getViewModel())
+        val viewModel = getViewModel()
+        bindOutput(viewModel)
+        bindInput(viewModel)
+    }
+
+    private fun bindInput(viewModel: PostListViewModel) = activity?.apply {
+        val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter
+        (adapter as? PostRecyclerViewAdapter)?.let { adapter ->
+            adapter.onItemClickListener = viewModel.input.onClickPostListItem::onNext
+        }
     }
 
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
             .observe(this) { posts ->
-                findViewById<RecyclerView>(R.id.recyclerViewPosts)?.apply {
-                    setupRecyclerView(this, posts)
+                recyclerViewAdapter?.setPosts(posts)
+            }
+
+        viewModel.output.showPostDetails
+            .observe(this) { post ->
+                if (twoPane) {
+                    val fragment = PostDetailFragment()
+                        .apply {
+                            arguments = Bundle().apply {
+//                                putString(PostDetailFragment.ARG_ITEM_ID, item.id)
+                            }
+                        }
+                    getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frmPostDetailContainer, fragment)
+                        .commit()
+                } else {
+                    val intent = Intent(context, PostDetailActivity::class.java).apply {
+//                        putExtra(PostDetailFragment.ARG_ITEM_ID, item.id)
+                    }
+                    context.startActivity(intent)
                 }
             }
     }
 
-    private fun setupRecyclerView(
-        recyclerView: RecyclerView,
-        posts: List<RedditPost>
-    ) = activity?.apply {
-        recyclerView.addItemDecoration(
+    private fun setupRecyclerView() = activity?.apply {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewPosts)
+        recyclerView?.addItemDecoration(
             DividerItemDecoration(
                 context,
                 DividerItemDecoration.VERTICAL
             )
         )
-        recyclerView.adapter =
-            PostRecyclerViewAdapter(posts)
+
+        recyclerViewAdapter = PostRecyclerViewAdapter()
+        recyclerView?.adapter = recyclerViewAdapter
     }
 }
 
@@ -90,6 +118,9 @@ class PostListActivity : AppCompatActivity(), IViewModelActivity<PostListViewMod
         get() = this
 
     override fun getViewModel(): PostListViewModel {
+        // ViewModels are created once per scope (i.e. Activity) and reused for as long as the scope
+        // is alive. It's fine to use `by viewModels()` every time instead of holding an instance of
+        // the ViewModel:
         val viewModel: PostListViewModel by viewModels()
         return viewModel
     }
