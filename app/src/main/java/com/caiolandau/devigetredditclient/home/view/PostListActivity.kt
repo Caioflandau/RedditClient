@@ -75,11 +75,12 @@ class PostListActivityWrapper(
 
         viewModel.output.showPostDetails
             .observe(this) { post ->
+                val post = post.getContentIfNotHandled() ?: return@observe
                 if (twoPane) {
                     val fragment = PostDetailFragment()
                         .apply {
                             arguments = Bundle().apply {
-//                                putString(PostDetailFragment.ARG_ITEM_ID, item.id)
+                                putParcelable(PostDetailFragment.ARG_POST, post)
                             }
                         }
                     getSupportFragmentManager()
@@ -88,7 +89,7 @@ class PostListActivityWrapper(
                         .commit()
                 } else {
                     val intent = Intent(context, PostDetailActivity::class.java).apply {
-//                        putExtra(PostDetailFragment.ARG_ITEM_ID, item.id)
+                        putExtra(PostDetailFragment.ARG_POST, post)
                     }
                     context.startActivity(intent)
                 }

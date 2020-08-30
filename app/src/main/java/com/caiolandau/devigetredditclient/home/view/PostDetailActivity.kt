@@ -48,9 +48,9 @@ class PostDetailActivityWrapper(
             val fragment = PostDetailFragment()
                 .apply {
                     arguments = Bundle().apply {
-                        putString(
-                            PostDetailFragment.ARG_ITEM_ID,
-                            getIntent().getStringExtra(PostDetailFragment.ARG_ITEM_ID)
+                        putParcelable(
+                            PostDetailFragment.ARG_POST,
+                            getIntent().getParcelableExtra(PostDetailFragment.ARG_POST)
                         )
                     }
                 }

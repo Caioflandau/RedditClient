@@ -42,14 +42,14 @@ class PostListViewModel(
 
     private fun initOutput(redditPostRepository: RedditPostRepository): Output {
         val listOfPosts = initListOfPostsOutput(redditPostRepository)
-        val showPostDetails = initShowPostDetails(listOfPosts)
+        val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails
         )
     }
 
-    private fun initShowPostDetails(
+    private fun initShowPostDetailsOutput(
         listOfPosts: MutableLiveData<List<RedditPost>>
     ) = MutableLiveData<Event<RedditPost?>>().apply {
         input.onClickPostListItem
