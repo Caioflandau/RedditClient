@@ -6,7 +6,6 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.util.IActivity
-import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.lang.ref.WeakReference
@@ -58,7 +57,7 @@ class PostDetailActivityWrapper(
 
 
             getSupportFragmentManager().beginTransaction()
-                .add(R.id.item_detail_container, fragment)
+                .add(R.id.frmPostDetailContainer, fragment)
                 .commit()
         }
     }

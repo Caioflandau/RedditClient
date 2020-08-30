@@ -46,7 +46,7 @@ class PostListActivityWrapper(
                 .setAction("Action", null).show()
         }
 
-        if (findViewById<NestedScrollView>(R.id.item_detail_container) != null) {
+        if (findViewById<NestedScrollView>(R.id.frmPostDetailContainer) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
             // If this view is present, then the
@@ -60,7 +60,7 @@ class PostListActivityWrapper(
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
             .observe(this) { posts ->
-                findViewById<RecyclerView>(R.id.item_list)?.apply {
+                findViewById<RecyclerView>(R.id.recyclerViewPosts)?.apply {
                     setupRecyclerView(this, posts)
                 }
             }
