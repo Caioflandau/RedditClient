@@ -15,16 +15,25 @@ import android.widget.TextView
 import com.caiolandau.devigetredditclient.R
 
 import com.caiolandau.devigetredditclient.dummy.DummyContent
+import com.caiolandau.devigetredditclient.util.IActivity
+import kotlinx.android.synthetic.main.activity_post_list.*
+import java.lang.ref.WeakReference
 
 /**
- * An activity representing a list of Pings. This activity
+ * An activity representing a list of RedditPosts. This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
  * lead to a [PostDetailActivity] representing
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-class PostListActivity : AppCompatActivity() {
+class PostListActivityWrapper(
+    activity: IActivity
+) {
+    // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
+    private val weakActivity: WeakReference<IActivity> = WeakReference(activity)
+    private val activity: IActivity?
+        get() = weakActivity.get()
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -32,17 +41,10 @@ class PostListActivity : AppCompatActivity() {
      */
     private var twoPane: Boolean = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_post_list)
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        toolbar.title = title
-
+    fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+                .setAction("Action", null).show()
         }
 
         if (findViewById<NestedScrollView>(R.id.item_detail_container) != null) {
@@ -56,7 +58,7 @@ class PostListActivity : AppCompatActivity() {
         setupRecyclerView(findViewById(R.id.item_list))
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView) {
+    private fun setupRecyclerView(recyclerView: RecyclerView) = activity?.apply {
         recyclerView.adapter =
             SimpleItemRecyclerViewAdapter(
                 this,
@@ -65,10 +67,10 @@ class PostListActivity : AppCompatActivity() {
             )
     }
 
-    class SimpleItemRecyclerViewAdapter(private val parentActivity: PostListActivity,
+    class SimpleItemRecyclerViewAdapter(private val parentActivity: IActivity,
                                         private val values: List<DummyContent.DummyItem>,
                                         private val twoPane: Boolean) :
-            RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
+        RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
 
@@ -78,14 +80,14 @@ class PostListActivity : AppCompatActivity() {
                 if (twoPane) {
                     val fragment = PostDetailFragment()
                         .apply {
-                        arguments = Bundle().apply {
-                            putString(PostDetailFragment.ARG_ITEM_ID, item.id)
+                            arguments = Bundle().apply {
+                                putString(PostDetailFragment.ARG_ITEM_ID, item.id)
+                            }
                         }
-                    }
-                    parentActivity.supportFragmentManager
-                            .beginTransaction()
-                            .replace(R.id.item_detail_container, fragment)
-                            .commit()
+                    parentActivity.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.item_detail_container, fragment)
+                        .commit()
                 } else {
                     val intent = Intent(v.context, PostDetailActivity::class.java).apply {
                         putExtra(PostDetailFragment.ARG_ITEM_ID, item.id)
@@ -97,7 +99,7 @@ class PostListActivity : AppCompatActivity() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.post_list_content, parent, false)
+                .inflate(R.layout.post_list_content, parent, false)
             return ViewHolder(view)
         }
 
@@ -118,5 +120,20 @@ class PostListActivity : AppCompatActivity() {
             val idView: TextView = view.findViewById(R.id.id_text)
             val contentView: TextView = view.findViewById(R.id.content)
         }
+    }
+}
+
+class PostListActivity : AppCompatActivity(), IActivity {
+
+    private val activityWrapper = PostListActivityWrapper(this)
+    override val context
+        get() = this
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_post_list)
+        toolbar.title = title
+
+        activityWrapper.onCreate(savedInstanceState)
     }
 }
