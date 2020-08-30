@@ -1,16 +1,12 @@
 package com.caiolandau.devigetredditclient.home.view
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
-import androidx.annotation.IdRes
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.util.IActivity
+import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.lang.ref.WeakReference

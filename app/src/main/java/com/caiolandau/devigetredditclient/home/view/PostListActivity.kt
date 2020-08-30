@@ -6,13 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.dummy.DummyContent
+import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
-import com.caiolandau.devigetredditclient.util.IActivity
+import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
@@ -27,12 +31,11 @@ import java.lang.ref.WeakReference
  * item details side-by-side using two vertical panes.
  */
 class PostListActivityWrapper(
-    activity: IActivity,
-    private val viewModel: PostListViewModel = PostListViewModel()
+    activity: IViewModelActivity<PostListViewModel>
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
-    private val weakActivity: WeakReference<IActivity> = WeakReference(activity)
-    private val activity: IActivity?
+    private val weakActivity: WeakReference<IViewModelActivity<PostListViewModel>> = WeakReference(activity)
+    private val activity: IViewModelActivity<PostListViewModel>?
         get() = weakActivity.get()
 
     /**
@@ -55,15 +58,14 @@ class PostListActivityWrapper(
             twoPane = true
         }
 
-        bindOutput()
+        bindOutput(getViewModel())
     }
 
-    private fun bindOutput() = activity?.apply {
+    private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
-            .map { DummyContent.ITEMS }
-            .subscribe { posts ->
+            .observe(this) {
                 findViewById<RecyclerView>(R.id.item_list)?.apply {
-                    setupRecyclerView(this, posts)
+                    setupRecyclerView(this, DummyContent.ITEMS)
                 }
             }
     }
@@ -81,7 +83,7 @@ class PostListActivityWrapper(
     }
 
     class SimpleItemRecyclerViewAdapter(
-        private val parentActivity: IActivity,
+        private val parentActivity: IViewModelActivity<PostListViewModel>,
         private val values: List<DummyContent.DummyItem>,
         private val twoPane: Boolean
     ) : RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
@@ -137,13 +139,18 @@ class PostListActivityWrapper(
     }
 }
 
-class PostListActivity : AppCompatActivity(), IActivity {
+class PostListActivity : AppCompatActivity(), IViewModelActivity<PostListViewModel> {
     // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
     // Activity business logic. The actual Activity subclass is just a shell.
     private val activityWrapper = PostListActivityWrapper(this)
     override val context
         get() = this
+
+    override fun getViewModel(): PostListViewModel {
+        val viewModel: PostListViewModel by viewModels()
+        return viewModel
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
