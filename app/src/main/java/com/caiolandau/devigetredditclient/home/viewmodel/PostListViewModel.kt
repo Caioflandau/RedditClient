@@ -14,14 +14,14 @@ class PostListViewModel(
     /**
      * Represents input events - i.e. list item clicks - that are possible from the view:
      */
-    inner class Input {
+    class Input {
 
     }
 
     /**
      * Represents outputs - i.e. list of posts - to be presented/handled by the view
      */
-    inner class Output {
+    class Output {
         var listOfPosts: Flowable<List<RedditPost>> = Flowable.never()
             internal set
     }
@@ -53,6 +53,8 @@ class PostListViewModel(
                     isRead = true
                 )
             )
-        }.toList()).subscribeOn(schedulerProvider.mainThread())
+        })
+            .map { it.toList() }
+            .subscribeOn(schedulerProvider.mainThread())
     }
 }

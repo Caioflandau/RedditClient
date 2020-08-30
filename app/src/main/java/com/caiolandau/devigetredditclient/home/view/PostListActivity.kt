@@ -11,7 +11,6 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.dummy.DummyContent
-import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -85,8 +84,7 @@ class PostListActivityWrapper(
         private val parentActivity: IActivity,
         private val values: List<DummyContent.DummyItem>,
         private val twoPane: Boolean
-    ) :
-        RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
+    ) : RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
 
@@ -132,7 +130,7 @@ class PostListActivityWrapper(
 
         override fun getItemCount() = values.size
 
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val idView: TextView = view.findViewById(R.id.id_text)
             val contentView: TextView = view.findViewById(R.id.content)
         }
