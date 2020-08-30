@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.dummy.DummyContent
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 
 /**

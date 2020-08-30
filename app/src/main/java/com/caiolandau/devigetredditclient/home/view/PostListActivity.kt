@@ -71,6 +71,7 @@ class PostListActivityWrapper(
         viewModel.output.listOfPosts
             .observe(this) { posts ->
                 recyclerViewAdapter?.setPosts(posts)
+                recyclerViewAdapter?.notifyDataSetChanged()
             }
 
         viewModel.output.showPostDetails
