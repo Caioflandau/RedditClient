@@ -4,22 +4,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.caiolandau.devigetredditclient.home.model.RedditPost
+import com.caiolandau.devigetredditclient.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import com.caiolandau.devigetredditclient.util.SchedulerProvider
-import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.delay
-import java.util.concurrent.TimeUnit
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
 ) : ViewModel() {
 
     class Dependency(
-        val schedulerProvider: SchedulerProvider = SchedulerProvider()
+        val schedulerProvider: SchedulerProvider = SchedulerProvider(),
+        val redditPostRepository: RedditPostRepository = RedditPostRepository()
     )
 
     /**
@@ -40,47 +38,34 @@ class PostListViewModel(
     private val compositeDisposable = CompositeDisposable()
 
     val input: Input = Input()
-    val output: Output = initOutput()
+    val output: Output = initOutput(dependency.redditPostRepository)
 
-    private fun initOutput(): Output {
-        val listOfPosts = initListOfPostsOutput()
+    private fun initOutput(redditPostRepository: RedditPostRepository): Output {
+        val listOfPosts = initListOfPostsOutput(redditPostRepository)
+        val showPostDetails = initShowPostDetails(listOfPosts)
         return Output(
             listOfPosts = listOfPosts,
-            showPostDetails = MutableLiveData<Event<RedditPost?>>().apply {
-                input.onClickPostListItem
-                    .map { position ->
-                        Event(listOfPosts.value?.get(position))
-                    }
-                    .subscribe(::postValue)
-                    .addTo(compositeDisposable)
-            }
+            showPostDetails = showPostDetails
         )
     }
 
-    private fun initListOfPostsOutput() = MutableLiveData<List<RedditPost>>().apply {
-        Flowable.just(ArrayList<RedditPost>().apply {
-            add(
-                RedditPost(
-                    title = "Reddit Post Title",
-                    author = "Author_1",
-                    entryDate = "just now",
-                    thumbnailUrl = null,
-                    numOfComments = 3,
-                    isRead = false
-                )
-            )
-            add(
-                RedditPost(
-                    title = "Reddit Post Title 2 - Very long lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-                    author = "Author_2",
-                    entryDate = "3 min ago",
-                    thumbnailUrl = null,
-                    numOfComments = 5,
-                    isRead = true
-                )
-            )
-        })
-            .map { it.toList() }
+    private fun initShowPostDetails(
+        listOfPosts: MutableLiveData<List<RedditPost>>
+    ) = MutableLiveData<Event<RedditPost?>>().apply {
+        input.onClickPostListItem
+            .map { position ->
+                Event(listOfPosts.value?.get(position))
+            }
+            .subscribe(::postValue)
+            .addTo(compositeDisposable)
+    }
+
+
+    private fun initListOfPostsOutput(
+        redditPostRepository: RedditPostRepository
+    ) = MutableLiveData<List<RedditPost>>().apply {
+        redditPostRepository.topPostsPage(10)
+            .map { it.posts }
             .subscribe(::postValue)
             .addTo(compositeDisposable)
     }
