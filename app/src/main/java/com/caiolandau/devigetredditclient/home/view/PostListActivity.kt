@@ -11,6 +11,8 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.dummy.DummyContent
+import com.caiolandau.devigetredditclient.home.model.RedditPost
+import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -26,7 +28,8 @@ import java.lang.ref.WeakReference
  * item details side-by-side using two vertical panes.
  */
 class PostListActivityWrapper(
-    activity: IActivity
+    activity: IActivity,
+    private val viewModel: PostListViewModel = PostListViewModel()
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
     private val weakActivity: WeakReference<IActivity> = WeakReference(activity)
@@ -52,17 +55,28 @@ class PostListActivityWrapper(
             // activity should be in two-pane mode.
             twoPane = true
         }
-        findViewById<RecyclerView>(R.id.item_list)?.apply {
-            setupRecyclerView(this)
-        }
+
+        bindOutput()
     }
 
+    private fun bindOutput() = activity?.apply {
+        viewModel.output.listOfPosts
+            .map { DummyContent.ITEMS }
+            .subscribe { posts ->
+                findViewById<RecyclerView>(R.id.item_list)?.apply {
+                    setupRecyclerView(this, posts)
+                }
+            }
+    }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView) = activity?.apply {
+    private fun setupRecyclerView(
+        recyclerView: RecyclerView,
+        posts: MutableList<DummyContent.DummyItem>
+    ) = activity?.apply {
         recyclerView.adapter =
             SimpleItemRecyclerViewAdapter(
                 this,
-                DummyContent.ITEMS,
+                posts,
                 twoPane
             )
     }
