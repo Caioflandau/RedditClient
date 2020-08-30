@@ -14,7 +14,7 @@ import androidx.fragment.app.FragmentManager
 interface IActivity {
     val context: Context
     fun getIntent(): Intent
-    fun <T : View> findViewById(@IdRes id: Int): T
+    fun <T : View> findViewById(@IdRes id: Int): T?
     fun getSupportActionBar(): ActionBar?
     fun getSupportFragmentManager(): FragmentManager
     fun navigateUpTo(upIntent: Intent): Boolean

@@ -30,7 +30,7 @@ class PostDetailActivityWrapper(
         get() = weakActivity.get()
 
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
+        findViewById<FloatingActionButton>(R.id.fab)?.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
@@ -87,7 +87,7 @@ class PostDetailActivityWrapper(
 
 class PostDetailActivity : AppCompatActivity(), IActivity {
     // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
-    // class. That wrapper is just a regular class that can be instantiated easily, and contain all
+    // class. That wrapper is just a regular class that can be instantiated easily, and contains all
     // Activity business logic. The actual Activity subclass is just a shell.
     private val activityWrapper = PostDetailActivityWrapper(this)
     override val context = this

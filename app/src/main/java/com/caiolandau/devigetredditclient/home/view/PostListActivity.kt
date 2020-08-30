@@ -2,20 +2,18 @@ package com.caiolandau.devigetredditclient.home.view
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.widget.NestedScrollView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.widget.Toolbar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.NestedScrollView
+import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
-
 import com.caiolandau.devigetredditclient.dummy.DummyContent
 import com.caiolandau.devigetredditclient.util.IActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
 import java.lang.ref.WeakReference
 
@@ -42,7 +40,7 @@ class PostListActivityWrapper(
     private var twoPane: Boolean = false
 
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
+        findViewById<FloatingActionButton>(R.id.fab)?.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
@@ -54,9 +52,11 @@ class PostListActivityWrapper(
             // activity should be in two-pane mode.
             twoPane = true
         }
-
-        setupRecyclerView(findViewById(R.id.item_list))
+        findViewById<RecyclerView>(R.id.item_list)?.apply {
+            setupRecyclerView(this)
+        }
     }
+
 
     private fun setupRecyclerView(recyclerView: RecyclerView) = activity?.apply {
         recyclerView.adapter =
@@ -67,9 +67,11 @@ class PostListActivityWrapper(
             )
     }
 
-    class SimpleItemRecyclerViewAdapter(private val parentActivity: IActivity,
-                                        private val values: List<DummyContent.DummyItem>,
-                                        private val twoPane: Boolean) :
+    class SimpleItemRecyclerViewAdapter(
+        private val parentActivity: IActivity,
+        private val values: List<DummyContent.DummyItem>,
+        private val twoPane: Boolean
+    ) :
         RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
@@ -124,7 +126,9 @@ class PostListActivityWrapper(
 }
 
 class PostListActivity : AppCompatActivity(), IActivity {
-
+    // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
+    // class. That wrapper is just a regular class that can be instantiated easily, and contains all
+    // Activity business logic. The actual Activity subclass is just a shell.
     private val activityWrapper = PostListActivityWrapper(this)
     override val context
         get() = this
