@@ -32,7 +32,7 @@ open class RedditPostsResponsePostData(
     val thumbnail: String?,
 
     @Json(name = "created_utc")
-    val createdUtc: Int,
+    val createdUtc: Double,
 
     @Json(name = "url")
     val url: String?,

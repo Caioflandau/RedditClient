@@ -9,6 +9,7 @@ import com.caiolandau.devigetredditclient.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import com.caiolandau.devigetredditclient.util.SchedulerProvider
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -25,7 +26,9 @@ class PostListViewModel(
         val redditPostRepository: RedditPostRepository = RedditPostRepository(
             redditApi = Retrofit.Builder()
                 .baseUrl("https://api.reddit.com/")
-                .addConverterFactory(MoshiConverterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create(
+                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+                ))
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build()
                 .create(RedditApi::class.java)
