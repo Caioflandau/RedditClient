@@ -8,4 +8,8 @@ import retrofit2.http.Query
 interface RedditApi {
     @GET("top")
     fun getTopPosts(@Query("limit") limit: Int, @Query("t") time: String): Single<RedditPostsResponse>
+
+    companion object {
+        const val baseUrl = "https://api.reddit.com/"
+    }
 }

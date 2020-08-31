@@ -3,6 +3,7 @@ package com.caiolandau.devigetredditclient.home.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.caiolandau.devigetredditclient.api.Api
 import com.caiolandau.devigetredditclient.api.RedditApi
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.repository.RedditPostRepository
@@ -23,16 +24,7 @@ class PostListViewModel(
 
     class Dependency(
         val schedulerProvider: SchedulerProvider = SchedulerProvider(),
-        val redditPostRepository: RedditPostRepository = RedditPostRepository(
-            redditApi = Retrofit.Builder()
-                .baseUrl("https://api.reddit.com/")
-                .addConverterFactory(MoshiConverterFactory.create(
-                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                ))
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-                .build()
-                .create(RedditApi::class.java)
-        )
+        val api: Api = Api()
     )
 
     /**
@@ -53,7 +45,7 @@ class PostListViewModel(
     private val compositeDisposable = CompositeDisposable()
 
     val input: Input = Input()
-    val output: Output = initOutput(dependency.redditPostRepository)
+    val output: Output = initOutput(RedditPostRepository(dependency.api.reddit))
 
     private fun initOutput(redditPostRepository: RedditPostRepository): Output {
         val listOfPosts = initListOfPostsOutput(redditPostRepository)
