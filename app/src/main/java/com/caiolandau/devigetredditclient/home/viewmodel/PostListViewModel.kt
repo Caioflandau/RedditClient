@@ -3,28 +3,30 @@ package com.caiolandau.devigetredditclient.home.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.paging.DataSource
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import com.caiolandau.devigetredditclient.api.Api
-import com.caiolandau.devigetredditclient.api.RedditApi
+import com.caiolandau.devigetredditclient.datasource.PagedRedditPostsDataSource
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import com.caiolandau.devigetredditclient.util.SchedulerProvider
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
-import retrofit2.Retrofit
-import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
-import retrofit2.converter.moshi.MoshiConverterFactory
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
 ) : ViewModel() {
 
     class Dependency(
-        val schedulerProvider: SchedulerProvider = SchedulerProvider(),
-        val api: Api = Api()
+        val dataSourceFactory: DataSource.Factory<String, RedditPost> =
+            object : DataSource.Factory<String, RedditPost>() {
+                override fun create(): DataSource<String, RedditPost> {
+                    return PagedRedditPostsDataSource(RedditPostRepository(Api().reddit))
+                }
+            }
     )
 
     /**
@@ -38,17 +40,17 @@ class PostListViewModel(
      * Represents outputs - i.e. list of posts - to be presented/handled by the view
      */
     class Output(
-        val listOfPosts: LiveData<List<RedditPost>>,
+        val listOfPosts: LiveData<PagedList<RedditPost>>,
         val showPostDetails: LiveData<Event<RedditPost?>>
     )
 
     private val compositeDisposable = CompositeDisposable()
 
     val input: Input = Input()
-    val output: Output = initOutput(RedditPostRepository(dependency.api.reddit))
+    val output: Output = initOutput(dependency.dataSourceFactory)
 
-    private fun initOutput(redditPostRepository: RedditPostRepository): Output {
-        val listOfPosts = initListOfPostsOutput(redditPostRepository)
+    private fun initOutput(dataSourceFactory: DataSource.Factory<String, RedditPost>): Output {
+        val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         return Output(
             listOfPosts = listOfPosts,
@@ -57,7 +59,7 @@ class PostListViewModel(
     }
 
     private fun initShowPostDetailsOutput(
-        listOfPosts: MutableLiveData<List<RedditPost>>
+        listOfPosts: LiveData<PagedList<RedditPost>>
     ) = MutableLiveData<Event<RedditPost?>>().apply {
         input.onClickPostListItem
             .map { position ->
@@ -69,16 +71,21 @@ class PostListViewModel(
 
 
     private fun initListOfPostsOutput(
-        redditPostRepository: RedditPostRepository
-    ) = MutableLiveData<List<RedditPost>>().apply {
-        redditPostRepository.topPostsTodayPage(10)
-            .map { it.posts }
-            .subscribe(::postValue)
-            .addTo(compositeDisposable)
+        dataSourceFactory: DataSource.Factory<String, RedditPost>
+    ): LiveData<PagedList<RedditPost>> {
+        val config = PagedList.Config.Builder()
+            .setPageSize(PAGE_SIZE)
+            .build()
+
+        return LivePagedListBuilder(dataSourceFactory, config).build()
     }
 
     override fun onCleared() {
         super.onCleared()
         compositeDisposable.clear()
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 10
     }
 }

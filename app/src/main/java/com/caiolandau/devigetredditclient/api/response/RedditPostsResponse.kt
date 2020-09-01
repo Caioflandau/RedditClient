@@ -19,7 +19,13 @@ open class RedditPostsResponse(
 
 open class RedditPostsResponseData(
     @Json(name = "children")
-    val children: List<RedditPostsResponseChild>
+    val children: List<RedditPostsResponseChild>,
+
+    @Json(name = "after")
+    val after: String?,
+
+    @Json(name = "before")
+    val before: String?
 )
 
 open class RedditPostsResponseChild(
@@ -28,6 +34,9 @@ open class RedditPostsResponseChild(
 )
 
 open class RedditPostsResponsePostData(
+    @Json(name = "id")
+    val id: String,
+
     @Json(name = "title")
     val title: String,
 

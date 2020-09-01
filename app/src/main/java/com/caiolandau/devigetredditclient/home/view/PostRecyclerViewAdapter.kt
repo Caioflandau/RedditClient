@@ -5,18 +5,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 
-class PostRecyclerViewAdapter : RecyclerView.Adapter<PostRecyclerViewAdapter.ViewHolder>() {
-    private var posts: List<RedditPost> = emptyList()
+class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAdapter.ViewHolder>(
+    object : DiffUtil.ItemCallback<RedditPost>() {
+        override fun areItemsTheSame(oldItem: RedditPost, newItem: RedditPost) =
+            oldItem.id == newItem.id
 
-    var onItemClickListener: ((Int) -> Unit) = {}
+        override fun areContentsTheSame(oldItem: RedditPost, newItem: RedditPost) =
+            oldItem == newItem
 
-    fun setPosts(newPosts: List<RedditPost>) {
-        posts = newPosts
     }
+) {
+    var onItemClickListener: ((Int) -> Unit) = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -25,7 +30,7 @@ class PostRecyclerViewAdapter : RecyclerView.Adapter<PostRecyclerViewAdapter.Vie
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val post = posts[position]
+        val post = getItem(position) ?: return
         holder.txtPosterName.text = post.author
         holder.txtPostTime.text = post.entryDate
         holder.txtPostTitle.text = post.title
@@ -34,8 +39,6 @@ class PostRecyclerViewAdapter : RecyclerView.Adapter<PostRecyclerViewAdapter.Vie
             onItemClickListener(position)
         }
     }
-
-    override fun getItemCount() = posts.size
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val txtPosterName: TextView = view.findViewById(R.id.txtPosterName)

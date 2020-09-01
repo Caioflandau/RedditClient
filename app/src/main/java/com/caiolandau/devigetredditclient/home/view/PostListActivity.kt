@@ -70,8 +70,7 @@ class PostListActivityWrapper(
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
             .observe(this) { posts ->
-                recyclerViewAdapter?.setPosts(posts)
-                recyclerViewAdapter?.notifyDataSetChanged()
+                recyclerViewAdapter?.submitList(posts)
             }
 
         viewModel.output.showPostDetails

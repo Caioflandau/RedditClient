@@ -5,38 +5,75 @@ import android.os.Parcelable
 import java.net.URL
 
 class RedditPost(
+    val id: String,
     val title: String,
     val author: String,
     val entryDate: String,
-    val thumbnailUrl: URL?,
+    val thumbnailUrl: String?,
     val numOfComments: Int,
     val isRead: Boolean
 ) : Parcelable {
-    constructor(source: Parcel) : this(
-        source.readString() ?: "",
-        source.readString() ?: "",
-        source.readString() ?: "",
-        source.readSerializable() as URL?,
-        source.readInt(),
-        1 == source.readInt()
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readByte() != 0.toByte()
     )
 
-    override fun describeContents() = 0
-
-    override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
-        writeString(title)
-        writeString(author)
-        writeString(entryDate)
-        writeSerializable(thumbnailUrl)
-        writeInt(numOfComments)
-        writeInt((if (isRead) 1 else 0))
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
+        parcel.writeString(title)
+        parcel.writeString(author)
+        parcel.writeString(entryDate)
+        parcel.writeString(thumbnailUrl)
+        parcel.writeInt(numOfComments)
+        parcel.writeByte(if (isRead) 1 else 0)
     }
 
-    companion object {
-        @JvmField
-        val CREATOR: Parcelable.Creator<RedditPost> = object : Parcelable.Creator<RedditPost> {
-            override fun createFromParcel(source: Parcel): RedditPost = RedditPost(source)
-            override fun newArray(size: Int): Array<RedditPost?> = arrayOfNulls(size)
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RedditPost
+
+        if (id != other.id) return false
+        if (title != other.title) return false
+        if (author != other.author) return false
+        if (entryDate != other.entryDate) return false
+        if (thumbnailUrl != other.thumbnailUrl) return false
+        if (numOfComments != other.numOfComments) return false
+        if (isRead != other.isRead) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + author.hashCode()
+        result = 31 * result + entryDate.hashCode()
+        result = 31 * result + (thumbnailUrl?.hashCode() ?: 0)
+        result = 31 * result + numOfComments
+        result = 31 * result + isRead.hashCode()
+        return result
+    }
+
+    companion object CREATOR : Parcelable.Creator<RedditPost> {
+        override fun createFromParcel(parcel: Parcel): RedditPost {
+            return RedditPost(parcel)
+        }
+
+        override fun newArray(size: Int): Array<RedditPost?> {
+            return arrayOfNulls(size)
         }
     }
+
+
 }

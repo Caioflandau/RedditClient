@@ -15,12 +15,15 @@ class RedditPostsResponseToRedditPostsPageConverter(
     private val epochToRelativeTimeConverter: EpochToRelativeTimeConverter = EpochToRelativeTimeConverter()
 ) {
     fun convert(response: RedditPostsResponse) = RedditPostPage(
+        pageAfter = response.data.after,
+        pageBefore = response.data.before,
         posts = response.data.children.map {
             RedditPost(
+                id = it.data.id,
                 title = it.data.title,
                 author = it.data.author,
                 entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
-                thumbnailUrl = URL(it.data.thumbnail),
+                thumbnailUrl = it.data.thumbnail,
                 numOfComments = it.data.numComments,
                 isRead = false
             )
