@@ -38,7 +38,8 @@ class PostListViewModel(
      */
     class Output(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
-        val showPostDetails: LiveData<Event<RedditPost?>>
+        val showPostDetails: LiveData<Event<RedditPost?>>,
+        val errorLoadingPage: LiveData<Event<Unit>>
     )
 
     private val viewModelJob = Job()
@@ -49,17 +50,19 @@ class PostListViewModel(
     val output: Output = initOutput(dependency.redditPostRepository)
 
     private fun initOutput(redditPostRepository: RedditPostRepository): Output {
-        val dataSourceFactory: DataSource.Factory<String, RedditPost> =
-            object : DataSource.Factory<String, RedditPost>() {
-                override fun create(): DataSource<String, RedditPost> {
-                    return PagedRedditPostsDataSource(redditPostRepository, coroutineScope)
-                }
-            }
+        val errorLoadingPage = MutableLiveData<Event<Unit>>()
+        val dataSourceFactory = PagedRedditPostsDataSource.getFactory(
+            redditPostRepository,
+            coroutineScope
+        ) {
+            errorLoadingPage.postValue(Event(Unit))
+        }
         val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         return Output(
             listOfPosts = listOfPosts,
-            showPostDetails = showPostDetails
+            showPostDetails = showPostDetails,
+            errorLoadingPage = errorLoadingPage
         )
     }
 

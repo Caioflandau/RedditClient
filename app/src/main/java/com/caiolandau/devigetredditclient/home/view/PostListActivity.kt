@@ -2,6 +2,7 @@ package com.caiolandau.devigetredditclient.home.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
@@ -92,6 +93,13 @@ class PostListActivityWrapper(
                     }
                     context.startActivity(intent)
                 }
+            }
+
+        viewModel.output.errorLoadingPage
+            .observe(this) {
+                val containerView = findViewById<FrameLayout>(R.id.frmListContainer) ?: return@observe
+                Snackbar.make(containerView, R.string.error_loading_posts, Snackbar.LENGTH_LONG)
+                    .show()
             }
     }
 
