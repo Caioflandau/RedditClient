@@ -3,7 +3,6 @@ package com.caiolandau.devigetredditclient.api
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 class RetrofitFactory {
@@ -13,6 +12,5 @@ class RetrofitFactory {
     ): Retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
         .build()
 }

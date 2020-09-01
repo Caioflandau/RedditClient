@@ -14,6 +14,7 @@ import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
+import kotlinx.coroutines.channels.sendBlocking
 import java.lang.ref.WeakReference
 
 /**
@@ -63,7 +64,9 @@ class PostListActivityWrapper(
     private fun bindInput(viewModel: PostListViewModel) = activity?.apply {
         val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter
         (adapter as? PostRecyclerViewAdapter)?.let { adapter ->
-            adapter.onItemClickListener = viewModel.input.onClickPostListItem::onNext
+            adapter.onItemClickListener = {
+                viewModel.input.onClickPostListItem.sendBlocking(it)
+            }
         }
     }
 

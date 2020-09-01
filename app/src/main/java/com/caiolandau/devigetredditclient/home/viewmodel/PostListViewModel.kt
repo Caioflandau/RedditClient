@@ -1,8 +1,6 @@
 package com.caiolandau.devigetredditclient.home.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -11,12 +9,11 @@ import com.caiolandau.devigetredditclient.datasource.PagedRedditPostsDataSource
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
@@ -30,7 +27,7 @@ class PostListViewModel(
      * Represents input events - i.e. list item clicks - that are possible from the view:
      */
     class Input {
-        val onClickPostListItem: PublishSubject<Int> = PublishSubject.create()
+        val onClickPostListItem: Channel<Int> = Channel()
     }
 
     /**
@@ -42,10 +39,6 @@ class PostListViewModel(
         val errorLoadingPage: LiveData<Event<Unit>>
     )
 
-    private val viewModelJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + viewModelJob)
-    private val compositeDisposable = CompositeDisposable()
-
     val input: Input = Input()
     val output: Output = initOutput(dependency.redditPostRepository)
 
@@ -53,7 +46,7 @@ class PostListViewModel(
         val errorLoadingPage = MutableLiveData<Event<Unit>>()
         val dataSourceFactory = PagedRedditPostsDataSource.getFactory(
             redditPostRepository,
-            coroutineScope
+            viewModelScope
         ) {
             errorLoadingPage.postValue(Event(Unit))
         }
@@ -69,12 +62,15 @@ class PostListViewModel(
     private fun initShowPostDetailsOutput(
         listOfPosts: LiveData<PagedList<RedditPost>>
     ) = MutableLiveData<Event<RedditPost?>>().apply {
-        input.onClickPostListItem
-            .map { position ->
-                Event(listOfPosts.value?.get(position))
-            }
-            .subscribe(::postValue)
-            .addTo(compositeDisposable)
+        viewModelScope.launch {
+            input.onClickPostListItem
+                .consumeAsFlow()
+                .map { position ->
+                    Event(listOfPosts.value?.get(position))
+                }
+                .collect(::postValue)
+        }
+
     }
 
 
@@ -86,11 +82,6 @@ class PostListViewModel(
             .build()
 
         return LivePagedListBuilder(dataSourceFactory, config).build()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        compositeDisposable.clear()
     }
 
     private companion object {
