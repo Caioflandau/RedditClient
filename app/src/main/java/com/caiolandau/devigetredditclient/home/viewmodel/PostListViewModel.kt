@@ -11,22 +11,19 @@ import com.caiolandau.devigetredditclient.datasource.PagedRedditPostsDataSource
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
-import com.caiolandau.devigetredditclient.util.SchedulerProvider
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
 ) : ViewModel() {
 
     class Dependency(
-        val dataSourceFactory: DataSource.Factory<String, RedditPost> =
-            object : DataSource.Factory<String, RedditPost>() {
-                override fun create(): DataSource<String, RedditPost> {
-                    return PagedRedditPostsDataSource(RedditPostRepository(Api().reddit))
-                }
-            }
+        val redditPostRepository: RedditPostRepository = RedditPostRepository(Api().reddit)
     )
 
     /**
@@ -44,12 +41,20 @@ class PostListViewModel(
         val showPostDetails: LiveData<Event<RedditPost?>>
     )
 
+    private val viewModelJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + viewModelJob)
     private val compositeDisposable = CompositeDisposable()
 
     val input: Input = Input()
-    val output: Output = initOutput(dependency.dataSourceFactory)
+    val output: Output = initOutput(dependency.redditPostRepository)
 
-    private fun initOutput(dataSourceFactory: DataSource.Factory<String, RedditPost>): Output {
+    private fun initOutput(redditPostRepository: RedditPostRepository): Output {
+        val dataSourceFactory: DataSource.Factory<String, RedditPost> =
+            object : DataSource.Factory<String, RedditPost>() {
+                override fun create(): DataSource<String, RedditPost> {
+                    return PagedRedditPostsDataSource(redditPostRepository, coroutineScope)
+                }
+            }
         val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         return Output(

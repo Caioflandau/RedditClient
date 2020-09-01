@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
 import java.lang.ref.WeakReference
 
-
 /**
  * An activity representing a list of RedditPosts. This activity has different presentations for
  * handset and tablet-size devices.

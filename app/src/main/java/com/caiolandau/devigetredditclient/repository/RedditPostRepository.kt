@@ -10,10 +10,6 @@ class RedditPostRepository(
     private val redditApi: RedditApi,
     private val converter: RedditPostsResponseToRedditPostsPageConverter = RedditPostsResponseToRedditPostsPageConverter()
 ) {
-    fun topPostsTodayPage(numOfItems: Int, after: String? = null, before: String? = null) =
-        redditApi.getTopPostsTodayPage(numOfItems, after, before)
-            .map(converter::convert)
-            .doOnError {
-                Log.e("CFL", it.stackTraceToString())
-            }
+    suspend fun topPostsTodayPage(numOfItems: Int, after: String? = null, before: String? = null) =
+        converter.convert(redditApi.getTopPostsTodayPage(numOfItems, after, before))
 }
