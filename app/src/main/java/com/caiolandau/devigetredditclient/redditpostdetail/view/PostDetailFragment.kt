@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.home.view
+package com.caiolandau.devigetredditclient.redditpostdetail.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.home.model.RedditPost
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
 
 /**
  * A fragment representing a single post detail screen.

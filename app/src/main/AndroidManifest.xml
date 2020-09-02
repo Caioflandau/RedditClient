@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".home.view.PostListActivity"
+            android:name=".redditpostlist.view.PostListActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
@@ -23,13 +23,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".home.view.PostDetailActivity"
+            android:name=".redditpostdetail.view.PostDetailActivity"
             android:label="@string/title_item_detail"
-            android:parentActivityName=".home.view.PostListActivity"
+            android:parentActivityName=".redditpostlist.view.PostListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.caiolandau.devigetredditclient.home.view.PostListActivity" />
+                android:value="com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity" />
         </activity>
     </application>
 

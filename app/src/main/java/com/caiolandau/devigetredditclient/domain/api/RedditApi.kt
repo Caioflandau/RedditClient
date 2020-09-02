@@ -1,6 +1,6 @@
-package com.caiolandau.devigetredditclient.api
+package com.caiolandau.devigetredditclient.domain.api
 
-import com.caiolandau.devigetredditclient.api.response.RedditPostsResponse
+import com.caiolandau.devigetredditclient.domain.api.response.RedditPostsResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

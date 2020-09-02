@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.home.view
+package com.caiolandau.devigetredditclient.redditpostlist.view
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.home.model.RedditPost
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
 
 class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAdapter.ViewHolder>(
     object : DiffUtil.ItemCallback<RedditPost>() {

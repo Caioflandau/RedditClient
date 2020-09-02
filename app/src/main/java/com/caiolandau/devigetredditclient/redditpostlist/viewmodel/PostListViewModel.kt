@@ -1,13 +1,13 @@
-package com.caiolandau.devigetredditclient.home.viewmodel
+package com.caiolandau.devigetredditclient.redditpostlist.viewmodel
 
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.caiolandau.devigetredditclient.api.Api
-import com.caiolandau.devigetredditclient.datasource.PagedRedditPostsDataSource
-import com.caiolandau.devigetredditclient.home.model.RedditPost
-import com.caiolandau.devigetredditclient.repository.RedditPostRepository
+import com.caiolandau.devigetredditclient.domain.api.Api
+import com.caiolandau.devigetredditclient.domain.datasource.PagedRedditPostsDataSource
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
+import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect

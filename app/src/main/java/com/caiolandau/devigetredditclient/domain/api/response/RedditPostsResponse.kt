@@ -1,7 +1,6 @@
-package com.caiolandau.devigetredditclient.api.response
+package com.caiolandau.devigetredditclient.domain.api.response
 
 import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 
 /**
  * The classes in this file are 1:1 mappings between the API's JSON and Kotlin classes.

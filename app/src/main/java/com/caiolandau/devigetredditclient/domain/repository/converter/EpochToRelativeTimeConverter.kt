@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.repository.converter
+package com.caiolandau.devigetredditclient.domain.repository.converter
 
 import android.text.format.DateUtils
 

@@ -11,7 +11,7 @@
     android:orientation="horizontal"
     android:showDividers="middle"
     android:weightSum="10"
-    tools:context=".home.view.PostListActivity">
+    tools:context=".redditpostlist.view.PostListActivity">
 
     <!--
     This layout is a two-pane layout for the Items master/detail flow.
@@ -26,7 +26,7 @@
         android:layout_marginRight="16dp"
         android:layout_weight="4"
         app:layoutManager="LinearLayoutManager"
-        tools:context="com.caiolandau.devigetredditclient.home.view.PostListActivity"
+        tools:context="com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity"
         tools:listitem="@layout/post_list_content" />
 
     <FrameLayout

@@ -1,7 +1,7 @@
-package com.caiolandau.devigetredditclient.repository
+package com.caiolandau.devigetredditclient.domain.repository
 
-import com.caiolandau.devigetredditclient.api.RedditApi
-import com.caiolandau.devigetredditclient.repository.converter.RedditPostsResponseToRedditPostsPageConverter
+import com.caiolandau.devigetredditclient.domain.api.RedditApi
+import com.caiolandau.devigetredditclient.domain.repository.converter.RedditPostsResponseToRedditPostsPageConverter
 
 class RedditPostRepository(
     private val redditApi: RedditApi,

@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.api
+package com.caiolandau.devigetredditclient.domain.api
 
 class Api(
     retrofitFactory: RetrofitFactory = RetrofitFactory()

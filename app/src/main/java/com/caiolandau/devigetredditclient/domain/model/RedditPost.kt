@@ -1,8 +1,7 @@
-package com.caiolandau.devigetredditclient.home.model
+package com.caiolandau.devigetredditclient.domain.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import java.net.URL
 
 class RedditPost(
     val id: String,

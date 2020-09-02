@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.home.view
+package com.caiolandau.devigetredditclient.redditpostlist.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +9,9 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.caiolandau.devigetredditclient.R
-import com.caiolandau.devigetredditclient.home.viewmodel.PostListViewModel
+import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivity
+import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
+import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar

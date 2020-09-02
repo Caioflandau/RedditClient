@@ -1,10 +1,11 @@
-package com.caiolandau.devigetredditclient.home.view
+package com.caiolandau.devigetredditclient.redditpostdetail.view
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.caiolandau.devigetredditclient.R
+import com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity
 import com.caiolandau.devigetredditclient.util.IActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar

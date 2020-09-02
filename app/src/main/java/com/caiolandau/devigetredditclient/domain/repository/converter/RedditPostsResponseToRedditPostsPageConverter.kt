@@ -1,10 +1,10 @@
-package com.caiolandau.devigetredditclient.repository.converter
+package com.caiolandau.devigetredditclient.domain.repository.converter
 
 import android.text.Html
-import com.caiolandau.devigetredditclient.api.response.RedditPostsResponse
-import com.caiolandau.devigetredditclient.api.response.RedditPostsResponseChild
-import com.caiolandau.devigetredditclient.home.model.RedditPost
-import com.caiolandau.devigetredditclient.home.model.RedditPostPage
+import com.caiolandau.devigetredditclient.domain.api.response.RedditPostsResponse
+import com.caiolandau.devigetredditclient.domain.api.response.RedditPostsResponseChild
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
+import com.caiolandau.devigetredditclient.domain.model.RedditPostPage
 
 /**
  * Class responsible for converting API-layer response objects into app-domain models:

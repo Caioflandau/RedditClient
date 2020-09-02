@@ -1,4 +1,4 @@
-package com.caiolandau.devigetredditclient.home.model
+package com.caiolandau.devigetredditclient.domain.model
 
 class RedditPostPage(
     val posts: List<RedditPost>,

@@ -1,10 +1,9 @@
-package com.caiolandau.devigetredditclient.datasource
+package com.caiolandau.devigetredditclient.domain.datasource
 
-import android.util.Log
 import androidx.paging.DataSource
 import androidx.paging.PageKeyedDataSource
-import com.caiolandau.devigetredditclient.home.model.RedditPost
-import com.caiolandau.devigetredditclient.repository.RedditPostRepository
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
+import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
