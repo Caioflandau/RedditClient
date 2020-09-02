@@ -16,18 +16,23 @@
     <!--
     This layout is a two-pane layout for the Items master/detail flow.
     -->
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPosts"
-        android:name="com.caiolandau.devigetredditclient.ItemListFragment"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefresh"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
         android:layout_weight="4"
-        app:layoutManager="LinearLayoutManager"
-        tools:context="com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity"
-        tools:listitem="@layout/post_list_content" />
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewPosts"
+            android:name="com.caiolandau.devigetredditclient.ItemListFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            app:layoutManager="LinearLayoutManager"
+            tools:context="com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity"
+            tools:listitem="@layout/post_list_content" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <FrameLayout
         android:id="@+id/frmPostDetailContainer"
