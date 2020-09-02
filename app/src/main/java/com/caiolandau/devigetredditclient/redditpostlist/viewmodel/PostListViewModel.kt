@@ -11,10 +11,7 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class PostListViewModel(
@@ -67,19 +64,20 @@ class PostListViewModel(
 
     private fun initOutputIsRefreshing(
         listOfPosts: LiveData<PagedList<RedditPost>>
-    ) = MutableLiveData<Boolean>().apply {
+    ) = MutableLiveData<Boolean>(true).apply {
         viewModelScope.launch {
             input.onRefresh
-                .consumeAsFlow()
+                .receiveAsFlow()
                 .collect {
+                    // Invalidates the data source (causes a refresh in the paged list):
                     val dataSource = listOfPosts.value?.dataSource
-                    dataSource?.addInvalidatedCallback { postValue(false) }
                     dataSource?.invalidate()
 
                     // Set "isRefreshing" to true when beginning the refresh:
                     postValue(true)
                 }
         }
+
         viewModelScope.launch {
             val onLoadCallback = object : PagedList.Callback() {
                 override fun onInserted(position: Int, count: Int) { postValue(false) }
@@ -100,13 +98,23 @@ class PostListViewModel(
     ) = MutableLiveData<Event<RedditPost?>>().apply {
         viewModelScope.launch {
             input.onClickPostListItem
-                .consumeAsFlow()
+                .receiveAsFlow()
                 .map { position ->
                     Event(listOfPosts.value?.get(position))
                 }
                 .collect(::postValue)
         }
 
+        viewModelScope.launch {
+            listOfPosts
+                .asFlow()
+                .collect {
+                    if (it.loadedCount == 0) {
+                        // Clear details when refreshing:
+                        postValue(Event(null))
+                    }
+                }
+        }
     }
 
     private fun initListOfPostsOutput(

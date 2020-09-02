@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.caiolandau.devigetredditclient.R
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivity
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
 import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
@@ -84,24 +85,12 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.showPostDetails
-            .observe(this) { post ->
-                val post = post.getContentIfNotHandled() ?: return@observe
+            .observe(this) { postEvent ->
+                val post = postEvent.getContentIfNotHandled()
                 if (twoPane) {
-                    val fragment = PostDetailFragment()
-                        .apply {
-                            arguments = Bundle().apply {
-                                putParcelable(PostDetailFragment.ARG_POST, post)
-                            }
-                        }
-                    getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.frmPostDetailContainer, fragment)
-                        .commit()
+                    showDetailsFragment(post)
                 } else {
-                    val intent = Intent(context, PostDetailActivity::class.java).apply {
-                        putExtra(PostDetailFragment.ARG_POST, post)
-                    }
-                    context.startActivity(intent)
+                    showDetailsActivity(post)
                 }
             }
 
@@ -116,6 +105,36 @@ class PostListActivityWrapper(
             .observe(this) {
                 findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.isRefreshing = it
             }
+    }
+
+    private fun showDetailsActivity(post: RedditPost?) = activity?.apply {
+        post ?: return@apply
+        val intent = Intent(context, PostDetailActivity::class.java).apply {
+            putExtra(PostDetailFragment.ARG_POST, post)
+        }
+        context.startActivity(intent)
+    }
+
+    private fun showDetailsFragment(post: RedditPost?) = activity?.apply {
+        if (post == null) {
+            getSupportFragmentManager().findFragmentById(R.id.frmPostDetailContainer)?.let {
+                getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(it)
+                    .commit()
+            }
+        } else {
+            val fragment = PostDetailFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putParcelable(PostDetailFragment.ARG_POST, post)
+                    }
+                }
+            getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frmPostDetailContainer, fragment)
+                .commit()
+        }
     }
 
     private fun setupRecyclerView() = activity?.apply {
