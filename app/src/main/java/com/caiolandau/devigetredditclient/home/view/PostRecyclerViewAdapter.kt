@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 
@@ -30,10 +31,14 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val context = holder.itemView.context
+
         val post = getItem(position) ?: return
         holder.txtPosterName.text = post.author
         holder.txtPostTime.text = post.entryDate
         holder.txtPostTitle.text = post.title
+        holder.txtPostCommentCount.text = context.getString(R.string.num_of_comments, post.numOfComments)
+        holder.imgPostThumbnail.load(post.thumbnailUrl)
 
         holder.itemView.setOnClickListener {
             onItemClickListener(position)
@@ -44,6 +49,7 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         val txtPosterName: TextView = view.findViewById(R.id.txtPosterName)
         val txtPostTime: TextView = view.findViewById(R.id.txtPostTime)
         val txtPostTitle: TextView = view.findViewById(R.id.txtPostTitle)
+        val txtPostCommentCount: TextView = view.findViewById(R.id.txtPostCommentCount)
         val imgPostThumbnail: ImageView = view.findViewById(R.id.imgPostThumbnail)
     }
 }
