@@ -1,11 +1,10 @@
 package com.caiolandau.devigetredditclient.repository.converter
 
-import android.text.format.DateUtils
+import android.text.Html
 import com.caiolandau.devigetredditclient.api.response.RedditPostsResponse
+import com.caiolandau.devigetredditclient.api.response.RedditPostsResponseChild
 import com.caiolandau.devigetredditclient.home.model.RedditPost
 import com.caiolandau.devigetredditclient.home.model.RedditPostPage
-import java.net.URL
-import java.util.*
 
 /**
  * Class responsible for converting API-layer response objects into app-domain models:
@@ -23,10 +22,23 @@ class RedditPostsResponseToRedditPostsPageConverter(
                 title = it.data.title,
                 author = it.data.author,
                 entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
-                thumbnailUrl = it.data.thumbnail,
+                thumbnailUrl = getThumbnailUrl(it),
                 numOfComments = it.data.numComments,
                 isRead = false
             )
         }
     )
+
+    private fun getThumbnailUrl(responseChild: RedditPostsResponseChild): String? {
+        val preview = responseChild.data.preview
+        if (preview != null) {
+            // For some unknown reason, image preview URLs are HTML-encoded in the JSON.
+            // This decodes it. Example: &amp; becomes &
+            return Html.fromHtml(preview.images.firstOrNull()?.source?.url, 0)
+                .toString()
+        }
+
+        // If there's no preview image, use the root-level thumbnail as a fall-back:
+        return responseChild.data.thumbnail
+    }
 }

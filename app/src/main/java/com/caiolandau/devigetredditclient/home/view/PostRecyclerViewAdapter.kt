@@ -38,11 +38,18 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         holder.txtPostTime.text = post.entryDate
         holder.txtPostTitle.text = post.title
         holder.txtPostCommentCount.text = context.getString(R.string.num_of_comments, post.numOfComments)
-        holder.imgPostThumbnail.load(post.thumbnailUrl)
+        holder.imgPostThumbnail.load(post.thumbnailUrl) {
+            placeholder(R.drawable.ic_reddit_logo)
+            error(R.drawable.ic_reddit_logo)
+        }
 
         holder.itemView.setOnClickListener {
             onItemClickListener(position)
         }
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        super.onViewRecycled(holder)
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -51,5 +58,6 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         val txtPostTitle: TextView = view.findViewById(R.id.txtPostTitle)
         val txtPostCommentCount: TextView = view.findViewById(R.id.txtPostCommentCount)
         val imgPostThumbnail: ImageView = view.findViewById(R.id.imgPostThumbnail)
+
     }
 }

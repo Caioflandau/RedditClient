@@ -9,7 +9,7 @@ import com.squareup.moshi.JsonClass
  * the repository (using a converter) to app-domain models - i.e. RedditPostPage
  */
 
-open class RedditPostsResponse(
+class RedditPostsResponse(
     @Json(name = "kind")
     val kind: String,
 
@@ -17,7 +17,7 @@ open class RedditPostsResponse(
     val data: RedditPostsResponseData
 )
 
-open class RedditPostsResponseData(
+class RedditPostsResponseData(
     @Json(name = "children")
     val children: List<RedditPostsResponseChild>,
 
@@ -28,12 +28,12 @@ open class RedditPostsResponseData(
     val before: String?
 )
 
-open class RedditPostsResponseChild(
+class RedditPostsResponseChild(
     @Json(name = "data")
     val data: RedditPostsResponsePostData
 )
 
-open class RedditPostsResponsePostData(
+class RedditPostsResponsePostData(
     @Json(name = "id")
     val id: String,
 
@@ -53,5 +53,23 @@ open class RedditPostsResponsePostData(
     val url: String?,
 
     @Json(name = "num_comments")
-    val numComments: Int
+    val numComments: Int,
+
+    @Json(name = "preview")
+    val preview: RedditPostsResponsePostPreview?
+)
+
+class RedditPostsResponsePostPreview(
+    @Json(name = "images")
+    val images: List<RedditPostsResponsePostPreviewImage>
+)
+
+class RedditPostsResponsePostPreviewImage(
+    @Json(name = "source")
+    val source: RedditPostsResponsePostPreviewImageSource
+)
+
+class RedditPostsResponsePostPreviewImageSource(
+    @Json(name = "url")
+    val url: String
 )
