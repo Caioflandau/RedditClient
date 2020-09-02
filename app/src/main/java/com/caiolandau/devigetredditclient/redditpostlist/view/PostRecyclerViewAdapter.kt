@@ -48,16 +48,11 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         }
     }
 
-    override fun onViewRecycled(holder: ViewHolder) {
-        super.onViewRecycled(holder)
-    }
-
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val txtPosterName: TextView = view.findViewById(R.id.txtPosterName)
         val txtPostTime: TextView = view.findViewById(R.id.txtPostTime)
         val txtPostTitle: TextView = view.findViewById(R.id.txtPostTitle)
         val txtPostCommentCount: TextView = view.findViewById(R.id.txtPostCommentCount)
         val imgPostThumbnail: ImageView = view.findViewById(R.id.imgPostThumbnail)
-
     }
 }

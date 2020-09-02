@@ -1,6 +1,5 @@
 package com.caiolandau.devigetredditclient.redditpostlist.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -53,7 +52,7 @@ class PostListViewModel(
         }
         val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
-        val isRefreshing = initOutputIsRefreshing(listOfPosts)
+        val isRefreshing = initOutputIsRefreshing(listOfPosts, errorLoadingPage)
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails,
@@ -63,8 +62,9 @@ class PostListViewModel(
     }
 
     private fun initOutputIsRefreshing(
-        listOfPosts: LiveData<PagedList<RedditPost>>
-    ) = MutableLiveData<Boolean>(true).apply {
+        listOfPosts: LiveData<PagedList<RedditPost>>,
+        errorLoadingPage: LiveData<Event<Unit>>
+    ) = MutableLiveData(true).apply {
         viewModelScope.launch {
             input.onRefresh
                 .receiveAsFlow()
@@ -84,12 +84,20 @@ class PostListViewModel(
                 override fun onRemoved(position: Int, count: Int) {}
                 override fun onChanged(position: Int, count: Int) {}
             }
+
             listOfPosts
                 .asFlow()
                 .collectLatest {
                     // Set "isRefreshing" to false once a page is loaded:
                     it.addWeakCallback(null, onLoadCallback)
                 }
+        }
+
+        viewModelScope.launch {
+            errorLoadingPage
+                .asFlow()
+                .map { false }
+                .collect(::postValue)
         }
     }
 
