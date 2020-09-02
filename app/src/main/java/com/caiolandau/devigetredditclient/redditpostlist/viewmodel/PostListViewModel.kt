@@ -1,5 +1,6 @@
 package com.caiolandau.devigetredditclient.redditpostlist.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -11,6 +12,7 @@ import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -28,6 +30,7 @@ class PostListViewModel(
      */
     class Input {
         val onClickPostListItem: Channel<Int> = Channel()
+        val onRefresh: Channel<Unit> = Channel()
     }
 
     /**
@@ -36,7 +39,8 @@ class PostListViewModel(
     class Output(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
         val showPostDetails: LiveData<Event<RedditPost?>>,
-        val errorLoadingPage: LiveData<Event<Unit>>
+        val errorLoadingPage: LiveData<Event<Unit>>,
+        val isRefreshing: LiveData<Boolean>
     )
 
     val input: Input = Input()
@@ -52,11 +56,43 @@ class PostListViewModel(
         }
         val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
+        val isRefreshing = initOutputIsRefreshing(listOfPosts)
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails,
-            errorLoadingPage = errorLoadingPage
+            errorLoadingPage = errorLoadingPage,
+            isRefreshing = isRefreshing
         )
+    }
+
+    private fun initOutputIsRefreshing(
+        listOfPosts: LiveData<PagedList<RedditPost>>
+    ) = MutableLiveData<Boolean>().apply {
+        viewModelScope.launch {
+            input.onRefresh
+                .consumeAsFlow()
+                .collect {
+                    val dataSource = listOfPosts.value?.dataSource
+                    dataSource?.addInvalidatedCallback { postValue(false) }
+                    dataSource?.invalidate()
+
+                    // Set "isRefreshing" to true when beginning the refresh:
+                    postValue(true)
+                }
+        }
+        viewModelScope.launch {
+            val onLoadCallback = object : PagedList.Callback() {
+                override fun onInserted(position: Int, count: Int) { postValue(false) }
+                override fun onRemoved(position: Int, count: Int) {}
+                override fun onChanged(position: Int, count: Int) {}
+            }
+            listOfPosts
+                .asFlow()
+                .collectLatest {
+                    // Set "isRefreshing" to false once a page is loaded:
+                    it.addWeakCallback(null, onLoadCallback)
+                }
+        }
     }
 
     private fun initShowPostDetailsOutput(
@@ -72,7 +108,6 @@ class PostListViewModel(
         }
 
     }
-
 
     private fun initListOfPostsOutput(
         dataSourceFactory: DataSource.Factory<String, RedditPost>

@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivity
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
@@ -70,6 +71,10 @@ class PostListActivityWrapper(
                 viewModel.input.onClickPostListItem.sendBlocking(it)
             }
         }
+
+        findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.setOnRefreshListener {
+            viewModel.input.onRefresh.sendBlocking(Unit)
+        }
     }
 
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
@@ -105,6 +110,11 @@ class PostListActivityWrapper(
                 val containerView = findViewById<FrameLayout>(R.id.frmListContainer) ?: return@observe
                 Snackbar.make(containerView, R.string.error_loading_posts, Snackbar.LENGTH_LONG)
                     .show()
+            }
+
+        viewModel.output.isRefreshing
+            .observe(this) {
+                findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.isRefreshing = it
             }
     }
 
