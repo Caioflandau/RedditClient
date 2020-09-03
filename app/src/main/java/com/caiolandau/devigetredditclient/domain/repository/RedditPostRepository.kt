@@ -9,7 +9,7 @@ class RedditPostRepository(
     private val redditApi: RedditApi,
     private val converter: RedditPostsResponseToRedditPostsPageConverter = RedditPostsResponseToRedditPostsPageConverter(),
 
-    // Note: ideally, as a Reddit client, we'd load idenfinitely.
+    // Note: ideally, as a Reddit client, we'd load indefinitely.
     // For this exercise, we stop at 50 as explicitly requested in the assignment
     private val maxPosts: Int = 50
 ) {
@@ -26,7 +26,7 @@ class RedditPostRepository(
             // mutating the list. No need to re-load from the API in this case:
             return RedditPostPage(
                 posts = localLoadedPosts.filter { post -> !filteredPosts.map { it.id }.contains(post.id) },
-                pageAfter = localLoadedPosts.last().name,
+                pageAfter = if (hasReachedLimitOfPosts()) null else localLoadedPosts.last().name,
                 pageBefore = null
             )
         }
@@ -40,8 +40,7 @@ class RedditPostRepository(
 
             // If we reached the max number of posts allowed, we should stop loading more pages.
             // This means simply passing `null` as the "pageAfter":
-            pageAfter = if (localLoadedPosts.count() >= maxPosts) null else postPage.pageAfter,
-
+            pageAfter = if (hasReachedLimitOfPosts()) null else postPage.pageAfter,
             pageBefore = postPage.pageBefore
         )
     }
@@ -52,4 +51,6 @@ class RedditPostRepository(
     }
 
     fun filterPost(redditPost: RedditPost) = filteredPosts.add(redditPost)
+
+    private fun hasReachedLimitOfPosts() = localLoadedPosts.count() >= maxPosts
 }

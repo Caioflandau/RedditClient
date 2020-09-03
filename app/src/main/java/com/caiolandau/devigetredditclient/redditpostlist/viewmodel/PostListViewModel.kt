@@ -10,8 +10,10 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
@@ -47,15 +49,15 @@ class PostListViewModel(
 
     private fun initOutput(redditPostRepository: RedditPostRepository): Output {
         val errorLoadingPage = MutableLiveData<Event<Unit>>()
-        val dataSourceFactory = PagedRedditPostsDataSource.getFactory(
-            redditPostRepository,
-            viewModelScope
-        ) {
-            errorLoadingPage.postValue(Event(Unit))
-        }
+        val dataSourceFactory =
+            PagedRedditPostsDataSource.getFactory(redditPostRepository, viewModelScope) {
+                errorLoadingPage.postValue(Event(Unit))
+            }
+
         val listOfPosts = initListOfPostsOutput(dataSourceFactory, redditPostRepository)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
-        val isRefreshing = initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
+        val isRefreshing =
+            initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
         val clearedAll = initOutputClearedAll()
         return Output(
             listOfPosts = listOfPosts,
@@ -80,69 +82,65 @@ class PostListViewModel(
         listOfPosts: LiveData<PagedList<RedditPost>>,
         errorLoadingPage: LiveData<Event<Unit>>
     ) = MutableLiveData(true).apply {
-        viewModelScope.launch {
-            input.onRefresh
-                .receiveAsFlow()
-                .collect {
-                    // Invalidates local in-memory list of posts (causes data to be loaded from the
-                    // API again next time)
-                    redditPostRepository.invalidateLocalData()
+        input.onRefresh
+            .receiveAsFlow()
+            .onEach {
+                // Invalidates local in-memory list of posts (causes data to be loaded from the
+                // API again next time)
+                redditPostRepository.invalidateLocalData()
 
-                    // Invalidates the data source (causes a refresh in the paged list):
-                    val dataSource = listOfPosts.value?.dataSource
-                    dataSource?.invalidate()
+                // Invalidates the data source (causes a refresh in the paged list):
+                val dataSource = listOfPosts.value?.dataSource
+                dataSource?.invalidate()
 
-                    // Set "isRefreshing" to true when beginning the refresh:
-                    postValue(true)
-                }
-        }
+                // Set "isRefreshing" to true when beginning the refresh:
+                postValue(true)
+            }
+            .launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            val onLoadCallback = object : PagedList.Callback() {
-                override fun onInserted(position: Int, count: Int) {
-                    postValue(false)
-                }
-
-                override fun onRemoved(position: Int, count: Int) {}
-                override fun onChanged(position: Int, count: Int) {}
+        val onLoadCallback = object : PagedList.Callback() {
+            override fun onInserted(position: Int, count: Int) {
+                postValue(false)
             }
 
-            listOfPosts
-                .asFlow()
-                .collectLatest {
-                    // Set "isRefreshing" to false once a page is loaded:
-                    it.addWeakCallback(null, onLoadCallback)
-                }
+            override fun onRemoved(position: Int, count: Int) {}
+            override fun onChanged(position: Int, count: Int) {}
         }
 
-        viewModelScope.launch {
-            errorLoadingPage
-                .asFlow()
-                .map { false }
-                .collect(::postValue)
-        }
+
+        listOfPosts
+            .asFlow()
+            .onEach {
+                // Set "isRefreshing" to false once a page is loaded:
+                it.addWeakCallback(null, onLoadCallback)
+            }
+            .launchIn(viewModelScope)
+
+        errorLoadingPage
+            .asFlow()
+            .map { false }
+            .onEach(::postValue)
+            .launchIn(viewModelScope)
     }
 
     private fun initShowPostDetailsOutput(
         listOfPosts: LiveData<PagedList<RedditPost>>
     ) = MutableLiveData<Event<RedditPost?>>().apply {
-        viewModelScope.launch {
-            input.onClickPostListItem
-                .receiveAsFlow()
-                .map(::Event)
-                .collect(::postValue)
-        }
+        input.onClickPostListItem
+            .receiveAsFlow()
+            .map(::Event)
+            .onEach(::postValue)
+            .launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            listOfPosts
-                .asFlow()
-                .collect {
-                    if (it.loadedCount == 0) {
-                        // Clear details when refreshing:
-                        postValue(Event(null))
-                    }
+        listOfPosts
+            .asFlow()
+            .onEach {
+                if (it.loadedCount == 0) {
+                    // Clear details when refreshing:
+                    postValue(Event(null))
                 }
-        }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun initListOfPostsOutput(
