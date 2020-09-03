@@ -91,17 +91,13 @@ class PostListActivityWrapper(
             .observe(this) { posts ->
                 pagedListCallback = object: PagedList.Callback() {
                     override fun onChanged(position: Int, count: Int) {
-
+                        recyclerViewAdapter?.submitList(posts)
                     }
-
                     override fun onInserted(position: Int, count: Int) {
                         recyclerViewAdapter?.submitList(posts)
                     }
-
                     override fun onRemoved(position: Int, count: Int) {
-                        if (count > 0) {
-                            recyclerViewAdapter?.submitList(posts)
-                        }
+                        recyclerViewAdapter?.submitList(posts)
                     }
                 }
                 posts.addWeakCallback(null, pagedListCallback)

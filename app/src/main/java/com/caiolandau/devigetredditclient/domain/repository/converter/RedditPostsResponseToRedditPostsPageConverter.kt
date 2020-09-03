@@ -14,26 +14,23 @@ class RedditPostsResponseToRedditPostsPageConverter(
     private val epochToRelativeTimeConverter: EpochToRelativeTimeConverter = EpochToRelativeTimeConverter()
 ) {
     fun convert(
-        response: RedditPostsResponse,
-        filtering: List<RedditPost>
+        response: RedditPostsResponse
     ): RedditPostPage {
-        val filteredPosts = response.data.children.map {
-            RedditPost(
-                id = it.data.id,
-                name = it.data.name,
-                title = it.data.title,
-                author = it.data.author,
-                entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
-                thumbnailUrl = getThumbnailUrl(it),
-                numOfComments = it.data.numComments,
-                isRead = false
-            )
-        }.filter { !filtering.contains(it) }
-
         return RedditPostPage(
             pageAfter = response.data.after,
             pageBefore = response.data.before,
-            posts = filteredPosts
+            posts = response.data.children.map {
+                RedditPost(
+                    id = it.data.id,
+                    name = it.data.name,
+                    title = it.data.title,
+                    author = it.data.author,
+                    entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
+                    thumbnailUrl = getThumbnailUrl(it),
+                    numOfComments = it.data.numComments,
+                    isRead = false
+                )
+            }
         )
     }
 
