@@ -6,6 +6,7 @@ import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -40,6 +41,7 @@ class PostListActivityWrapper(
         get() = weakActivity.get()
 
     private var recyclerViewAdapter: PostRecyclerViewAdapter? = null
+    private lateinit var pagedListCallback: PagedList.Callback
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet device.
@@ -87,7 +89,22 @@ class PostListActivityWrapper(
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
             .observe(this) { posts ->
-                recyclerViewAdapter?.submitList(posts)
+                pagedListCallback = object: PagedList.Callback() {
+                    override fun onChanged(position: Int, count: Int) {
+
+                    }
+
+                    override fun onInserted(position: Int, count: Int) {
+                        recyclerViewAdapter?.submitList(posts)
+                    }
+
+                    override fun onRemoved(position: Int, count: Int) {
+                        if (count > 0) {
+                            recyclerViewAdapter?.submitList(posts)
+                        }
+                    }
+                }
+                posts.addWeakCallback(null, pagedListCallback)
             }
 
         viewModel.output.showPostDetails

@@ -10,10 +10,7 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class PostListViewModel(
@@ -29,7 +26,7 @@ class PostListViewModel(
      */
     class Input {
         val onClickPostListItem: Channel<Int> = Channel()
-        val onClickDismissPost: Channel<Int> = Channel()
+        val onClickDismissPost: Channel<RedditPost> = Channel()
         val onRefresh: Channel<Unit> = Channel()
     }
 
@@ -54,7 +51,7 @@ class PostListViewModel(
         ) {
             errorLoadingPage.postValue(Event(Unit))
         }
-        val listOfPosts = initListOfPostsOutput(dataSourceFactory)
+        val listOfPosts = initListOfPostsOutput(dataSourceFactory, redditPostRepository)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         val isRefreshing = initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
         return Output(
@@ -138,13 +135,24 @@ class PostListViewModel(
     }
 
     private fun initListOfPostsOutput(
-        dataSourceFactory: DataSource.Factory<String, RedditPost>
+        dataSourceFactory: DataSource.Factory<String, RedditPost>,
+        redditPostRepository: RedditPostRepository
     ): LiveData<PagedList<RedditPost>> {
         val config = PagedList.Config.Builder()
             .setPageSize(PAGE_SIZE)
             .build()
 
-        return LivePagedListBuilder(dataSourceFactory, config).build()
+        val pagedList = LivePagedListBuilder(dataSourceFactory, config).build()
+
+        input.onClickDismissPost
+            .receiveAsFlow()
+            .onEach {
+                redditPostRepository.filterPost(it)
+                pagedList.value?.dataSource?.invalidate()
+            }
+            .launchIn(viewModelScope)
+
+        return pagedList
     }
 
     private companion object {

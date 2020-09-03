@@ -47,12 +47,6 @@ class RedditPost(
 
         if (id != other.id) return false
         if (name != other.name) return false
-        if (title != other.title) return false
-        if (author != other.author) return false
-        if (entryDate != other.entryDate) return false
-        if (thumbnailUrl != other.thumbnailUrl) return false
-        if (numOfComments != other.numOfComments) return false
-        if (isRead != other.isRead) return false
 
         return true
     }

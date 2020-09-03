@@ -13,10 +13,11 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPostPage
 class RedditPostsResponseToRedditPostsPageConverter(
     private val epochToRelativeTimeConverter: EpochToRelativeTimeConverter = EpochToRelativeTimeConverter()
 ) {
-    fun convert(response: RedditPostsResponse) = RedditPostPage(
-        pageAfter = response.data.after,
-        pageBefore = response.data.before,
-        posts = response.data.children.map {
+    fun convert(
+        response: RedditPostsResponse,
+        filtering: List<RedditPost>
+    ): RedditPostPage {
+        val filteredPosts = response.data.children.map {
             RedditPost(
                 id = it.data.id,
                 name = it.data.name,
@@ -27,8 +28,14 @@ class RedditPostsResponseToRedditPostsPageConverter(
                 numOfComments = it.data.numComments,
                 isRead = false
             )
-        }
-    )
+        }.filter { !filtering.contains(it) }
+
+        return RedditPostPage(
+            pageAfter = response.data.after,
+            pageBefore = response.data.before,
+            posts = filteredPosts
+        )
+    }
 
     private fun getThumbnailUrl(responseChild: RedditPostsResponseChild): String? {
         val preview = responseChild.data.preview
