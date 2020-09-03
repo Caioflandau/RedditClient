@@ -52,11 +52,6 @@ class PostListActivityWrapper(
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
         setupRecyclerView()
 
-        findViewById<ExtendedFloatingActionButton>(R.id.btnClearAll)?.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-
         if (findViewById<NestedScrollView>(R.id.frmPostDetailContainer) != null) {
             // The detail container will be present only in the large-screen layouts (res/values-w900dp).
             // If this view is present, then the activity should be in two-pane mode.
@@ -84,6 +79,10 @@ class PostListActivityWrapper(
 
         findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.setOnRefreshListener {
             viewModel.input.onRefresh.sendBlocking(Unit)
+        }
+
+        findViewById<ExtendedFloatingActionButton>(R.id.btnClearAll)?.setOnClickListener {
+            viewModel.input.onClickDismissAll.sendBlocking(Unit)
         }
     }
 
@@ -124,6 +123,11 @@ class PostListActivityWrapper(
         viewModel.output.isRefreshing
             .observe(this) {
                 findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.isRefreshing = it
+            }
+
+        viewModel.output.clearedAll
+            .observe(this) {
+                recyclerViewAdapter?.submitList(null)
             }
     }
 

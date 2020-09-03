@@ -27,6 +27,7 @@ class PostListViewModel(
     class Input {
         val onClickPostListItem: Channel<RedditPost> = Channel()
         val onClickDismissPost: Channel<RedditPost> = Channel()
+        val onClickDismissAll: Channel<Unit> = Channel()
         val onRefresh: Channel<Unit> = Channel()
     }
 
@@ -37,7 +38,8 @@ class PostListViewModel(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
         val showPostDetails: LiveData<Event<RedditPost?>>,
         val errorLoadingPage: LiveData<Event<Unit>>,
-        val isRefreshing: LiveData<Boolean>
+        val isRefreshing: LiveData<Boolean>,
+        val clearedAll: LiveData<Event<Unit>>
     )
 
     val input: Input = Input()
@@ -54,12 +56,23 @@ class PostListViewModel(
         val listOfPosts = initListOfPostsOutput(dataSourceFactory, redditPostRepository)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
         val isRefreshing = initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
+        val clearedAll = initOutputClearedAll()
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails,
             errorLoadingPage = errorLoadingPage,
-            isRefreshing = isRefreshing
+            isRefreshing = isRefreshing,
+            clearedAll = clearedAll
         )
+    }
+
+    private fun initOutputClearedAll() = MutableLiveData<Event<Unit>>().apply {
+        input.onClickDismissAll
+            .receiveAsFlow()
+            .onEach {
+                postValue(Event(Unit))
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun initOutputIsRefreshing(

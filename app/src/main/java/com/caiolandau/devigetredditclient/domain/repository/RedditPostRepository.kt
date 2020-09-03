@@ -27,7 +27,7 @@ class RedditPostRepository(
             return RedditPostPage(
                 posts = localLoadedPosts.filter { post -> !filteredPosts.map { it.id }.contains(post.id) },
                 pageAfter = localLoadedPosts.last().name,
-                null
+                pageBefore = null
             )
         }
         val postPage = converter.convert(
@@ -47,7 +47,7 @@ class RedditPostRepository(
     }
 
     fun invalidateLocalData() {
-        // Ivnvalidating local data causes the next call to always "topPostsTodayPage" to reach the API:
+        // Invalidating local data causes the next call to always "topPostsTodayPage" to reach the API:
         localLoadedPosts.clear()
     }
 
