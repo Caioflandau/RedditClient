@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import coil.clear
 import coil.load
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
@@ -46,6 +47,11 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         holder.itemView.setOnClickListener {
             onItemClickListener(position)
         }
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        super.onViewRecycled(holder)
+        holder.imgPostThumbnail.clear()
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
