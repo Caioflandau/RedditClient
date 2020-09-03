@@ -29,12 +29,17 @@
         <include layout="@layout/post_list" />
     </FrameLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnClearAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:textColor="@color/colorLightText"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="@string/button_clear_all_posts"
+        android:contentDescription="@string/accessibility_clear_all_posts_button"
+        app:icon="@android:drawable/ic_delete"
+        app:iconTint="@color/colorLightText" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,4 +4,7 @@
     <string name="error_loading_posts">An error occurred while loading posts. Please check your connection status</string>
     <string name="button_dismiss_post">Dismiss post</string>
     <string name="num_of_comments">%1d comments</string>
+    <string name="button_clear_all_posts">Clear All</string>
+    <string name="accessibility_clear_all_posts_button">Clear all posts button</string>
+    <string name="accessibility_dismiss_this_post_button">Dismiss this post button</string>
 </resources>

@@ -25,7 +25,7 @@ class PostListViewModel(
      * Represents input events - i.e. list item clicks - that are possible from the view:
      */
     class Input {
-        val onClickPostListItem: Channel<Int> = Channel()
+        val onClickPostListItem: Channel<RedditPost> = Channel()
         val onClickDismissPost: Channel<RedditPost> = Channel()
         val onRefresh: Channel<Unit> = Channel()
     }
@@ -116,9 +116,7 @@ class PostListViewModel(
         viewModelScope.launch {
             input.onClickPostListItem
                 .receiveAsFlow()
-                .map { position ->
-                    Event(listOfPosts.value?.get(position))
-                }
+                .map(::Event)
                 .collect(::postValue)
         }
 

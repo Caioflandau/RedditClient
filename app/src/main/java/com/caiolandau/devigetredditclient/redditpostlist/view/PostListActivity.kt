@@ -16,6 +16,7 @@ import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivi
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
 import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
@@ -51,7 +52,7 @@ class PostListActivityWrapper(
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
         setupRecyclerView()
 
-        findViewById<FloatingActionButton>(R.id.fab)?.setOnClickListener { view ->
+        findViewById<ExtendedFloatingActionButton>(R.id.btnClearAll)?.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }

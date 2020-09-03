@@ -17,7 +17,7 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 
 class PostRecyclerViewAdapter :
     PagedListAdapter<RedditPost, PostRecyclerViewAdapter.ViewHolder>(DIFF_CALLBACK) {
-    var onItemClickListener: ((Int) -> Unit) = {}
+    var onItemClickListener: ((RedditPost) -> Unit) = {}
     var onDismissListener: ((RedditPost) -> Unit) = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,7 +41,7 @@ class PostRecyclerViewAdapter :
         }
 
         holder.itemView.setOnClickListener {
-            onItemClickListener(position)
+            onItemClickListener(post)
         }
         holder.btnDismissPost.setOnClickListener {
             onDismissListener(post)

@@ -66,6 +66,7 @@
             android:id="@+id/btnDismissPost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/accessibility_dismiss_this_post_button"
             android:text="@string/button_dismiss_post" />
 
         <TextView
