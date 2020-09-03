@@ -10,7 +10,10 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class PostListViewModel(
@@ -26,6 +29,7 @@ class PostListViewModel(
      */
     class Input {
         val onClickPostListItem: Channel<Int> = Channel()
+        val onClickDismissPost: Channel<Int> = Channel()
         val onRefresh: Channel<Unit> = Channel()
     }
 
@@ -52,7 +56,7 @@ class PostListViewModel(
         }
         val listOfPosts = initListOfPostsOutput(dataSourceFactory)
         val showPostDetails = initShowPostDetailsOutput(listOfPosts)
-        val isRefreshing = initOutputIsRefreshing(listOfPosts, errorLoadingPage)
+        val isRefreshing = initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails,
@@ -62,6 +66,7 @@ class PostListViewModel(
     }
 
     private fun initOutputIsRefreshing(
+        redditPostRepository: RedditPostRepository,
         listOfPosts: LiveData<PagedList<RedditPost>>,
         errorLoadingPage: LiveData<Event<Unit>>
     ) = MutableLiveData(true).apply {
@@ -69,6 +74,10 @@ class PostListViewModel(
             input.onRefresh
                 .receiveAsFlow()
                 .collect {
+                    // Invalidates local in-memory list of posts (causes data to be loaded from the
+                    // API again next time)
+                    redditPostRepository.invalidateLocalData()
+
                     // Invalidates the data source (causes a refresh in the paged list):
                     val dataSource = listOfPosts.value?.dataSource
                     dataSource?.invalidate()
@@ -80,7 +89,10 @@ class PostListViewModel(
 
         viewModelScope.launch {
             val onLoadCallback = object : PagedList.Callback() {
-                override fun onInserted(position: Int, count: Int) { postValue(false) }
+                override fun onInserted(position: Int, count: Int) {
+                    postValue(false)
+                }
+
                 override fun onRemoved(position: Int, count: Int) {}
                 override fun onChanged(position: Int, count: Int) {}
             }

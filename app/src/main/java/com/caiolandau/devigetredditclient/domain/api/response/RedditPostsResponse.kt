@@ -36,6 +36,9 @@ class RedditPostsResponsePostData(
     @Json(name = "id")
     val id: String,
 
+    @Json(name = "name")
+    val name: String,
+
     @Json(name = "title")
     val title: String,
 

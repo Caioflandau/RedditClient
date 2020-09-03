@@ -3,6 +3,7 @@ package com.caiolandau.devigetredditclient.redditpostlist.view
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.paging.PagedListAdapter
@@ -24,6 +25,7 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
     }
 ) {
     var onItemClickListener: ((Int) -> Unit) = {}
+    var onDismissListener: ((Int) -> Unit) = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -47,6 +49,9 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         holder.itemView.setOnClickListener {
             onItemClickListener(position)
         }
+        holder.btnDismissPost.setOnClickListener {
+            onDismissListener(position)
+        }
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
@@ -60,5 +65,6 @@ class PostRecyclerViewAdapter : PagedListAdapter<RedditPost, PostRecyclerViewAda
         val txtPostTitle: TextView = view.findViewById(R.id.txtPostTitle)
         val txtPostCommentCount: TextView = view.findViewById(R.id.txtPostCommentCount)
         val imgPostThumbnail: ImageView = view.findViewById(R.id.imgPostThumbnail)
+        val btnDismissPost: Button = view.findViewById(R.id.btnDismissPost)
     }
 }

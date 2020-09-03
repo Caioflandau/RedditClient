@@ -19,6 +19,7 @@ class RedditPostsResponseToRedditPostsPageConverter(
         posts = response.data.children.map {
             RedditPost(
                 id = it.data.id,
+                name = it.data.name,
                 title = it.data.title,
                 author = it.data.author,
                 entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),

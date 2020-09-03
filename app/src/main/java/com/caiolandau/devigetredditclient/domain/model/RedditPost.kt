@@ -5,6 +5,7 @@ import android.os.Parcelable
 
 class RedditPost(
     val id: String,
+    val name: String,
     val title: String,
     val author: String,
     val entryDate: String,
@@ -17,6 +18,7 @@ class RedditPost(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readString(),
         parcel.readInt(),
         parcel.readByte() != 0.toByte()
@@ -24,6 +26,7 @@ class RedditPost(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
+        parcel.writeString(name)
         parcel.writeString(title)
         parcel.writeString(author)
         parcel.writeString(entryDate)
@@ -43,6 +46,7 @@ class RedditPost(
         other as RedditPost
 
         if (id != other.id) return false
+        if (name != other.name) return false
         if (title != other.title) return false
         if (author != other.author) return false
         if (entryDate != other.entryDate) return false
@@ -55,6 +59,7 @@ class RedditPost(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
+        result = 31 * result + name.hashCode()
         result = 31 * result + title.hashCode()
         result = 31 * result + author.hashCode()
         result = 31 * result + entryDate.hashCode()

@@ -66,10 +66,16 @@ class PostListActivityWrapper(
     }
 
     private fun bindInput(viewModel: PostListViewModel) = activity?.apply {
-        val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter
-        (adapter as? PostRecyclerViewAdapter)?.let { adapter ->
-            adapter.onItemClickListener = {
+        val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
+        adapter?.apply {
+            onItemClickListener = {
                 viewModel.input.onClickPostListItem.sendBlocking(it)
+            }
+        }
+
+        adapter?.apply {
+            onDismissListener = {
+                viewModel.input.onClickDismissPost.sendBlocking(it)
             }
         }
 
