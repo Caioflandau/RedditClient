@@ -45,6 +45,9 @@ class RedditPostsResponsePostData(
     @Json(name = "selftext")
     val selfText: String?,
 
+    @Json(name = "permalink")
+    val permalink: String,
+
     @Json(name = "author")
     val author: String,
 

@@ -9,6 +9,7 @@ class RedditPost(
     val title: String,
     val author: String,
     val selfText: String?,
+    val permalink: String,
     val entryDate: String,
     val imageUrl: String?,
     val thumbnailUrl: String?,
@@ -16,6 +17,7 @@ class RedditPost(
     var isRead: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
@@ -34,6 +36,7 @@ class RedditPost(
         parcel.writeString(title)
         parcel.writeString(author)
         parcel.writeString(selfText)
+        parcel.writeString(permalink)
         parcel.writeString(entryDate)
         parcel.writeString(imageUrl)
         parcel.writeString(thumbnailUrl)
@@ -56,6 +59,7 @@ class RedditPost(
         if (title != other.title) return false
         if (author != other.author) return false
         if (selfText != other.selfText) return false
+        if (selfText != other.permalink) return false
         if (entryDate != other.entryDate) return false
         if (imageUrl != other.imageUrl) return false
         if (thumbnailUrl != other.thumbnailUrl) return false

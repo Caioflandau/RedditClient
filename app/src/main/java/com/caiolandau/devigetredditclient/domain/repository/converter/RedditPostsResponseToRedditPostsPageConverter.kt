@@ -25,6 +25,7 @@ class RedditPostsResponseToRedditPostsPageConverter(
                     name = it.data.name,
                     title = it.data.title,
                     selfText = it.data.selfText,
+                    permalink = it.data.permalink,
                     author = it.data.author,
                     entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
                     imageUrl = it.data.url,
