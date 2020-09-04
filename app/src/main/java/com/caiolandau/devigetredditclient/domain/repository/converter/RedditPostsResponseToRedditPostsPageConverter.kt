@@ -24,8 +24,10 @@ class RedditPostsResponseToRedditPostsPageConverter(
                     id = it.data.id,
                     name = it.data.name,
                     title = it.data.title,
+                    selfText = it.data.selfText,
                     author = it.data.author,
                     entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
+                    imageUrl = it.data.url,
                     thumbnailUrl = getThumbnailUrl(it),
                     numOfComments = it.data.numComments
                 )

@@ -42,6 +42,9 @@ class RedditPostsResponsePostData(
     @Json(name = "title")
     val title: String,
 
+    @Json(name = "selftext")
+    val selfText: String?,
+
     @Json(name = "author")
     val author: String,
 

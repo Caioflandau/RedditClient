@@ -8,12 +8,16 @@ class RedditPost(
     val name: String,
     val title: String,
     val author: String,
+    val selfText: String?,
     val entryDate: String,
+    val imageUrl: String?,
     val thumbnailUrl: String?,
     val numOfComments: Int,
     var isRead: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
@@ -29,7 +33,9 @@ class RedditPost(
         parcel.writeString(name)
         parcel.writeString(title)
         parcel.writeString(author)
+        parcel.writeString(selfText)
         parcel.writeString(entryDate)
+        parcel.writeString(imageUrl)
         parcel.writeString(thumbnailUrl)
         parcel.writeInt(numOfComments)
         parcel.writeByte(if (isRead) 1 else 0)
@@ -49,7 +55,9 @@ class RedditPost(
         if (name != other.name) return false
         if (title != other.title) return false
         if (author != other.author) return false
+        if (selfText != other.selfText) return false
         if (entryDate != other.entryDate) return false
+        if (imageUrl != other.imageUrl) return false
         if (thumbnailUrl != other.thumbnailUrl) return false
         if (numOfComments != other.numOfComments) return false
         if (isRead != other.isRead) return false
@@ -63,6 +71,7 @@ class RedditPost(
         result = 31 * result + title.hashCode()
         result = 31 * result + author.hashCode()
         result = 31 * result + entryDate.hashCode()
+        result = 31 * result + (imageUrl?.hashCode() ?: 0)
         result = 31 * result + (thumbnailUrl?.hashCode() ?: 0)
         result = 31 * result + numOfComments
         result = 31 * result + isRead.hashCode()
