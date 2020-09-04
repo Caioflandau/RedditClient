@@ -18,7 +18,6 @@ import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragme
 import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
 import kotlinx.coroutines.channels.sendBlocking
@@ -65,7 +64,8 @@ class PostListActivityWrapper(
     }
 
     private fun bindInput(viewModel: PostListViewModel) = activity?.apply {
-        val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
+        val adapter =
+            findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
         adapter?.apply {
             onItemClickListener = {
                 viewModel.input.onClickPostListItem.offer(it)
@@ -90,41 +90,55 @@ class PostListActivityWrapper(
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
         viewModel.output.listOfPosts
             .observe(this) { posts ->
-                pagedListCallback = object: PagedList.Callback() {
+                pagedListCallback = object : PagedList.Callback() {
                     override fun onChanged(position: Int, count: Int) {
                         recyclerViewAdapter?.submitList(posts)
                     }
+
                     override fun onInserted(position: Int, count: Int) {
                         recyclerViewAdapter?.submitList(posts)
                     }
+
                     override fun onRemoved(position: Int, count: Int) {
                         recyclerViewAdapter?.submitList(posts)
                     }
                 }
-                posts.addWeakCallback(null, pagedListCallback)
+                if (posts.size > 0) {
+                    recyclerViewAdapter?.submitList(posts)
+                } else {
+                    posts.addWeakCallback(null, pagedListCallback)
+                }
             }
 
         viewModel.output.showPostDetails
-            .observe(this) { postEvent ->
-                val post = postEvent.getContentIfNotHandled()
-                Log.d("CFL", "showPostDetails $post")
-                if (twoPane) {
-                    showDetailsFragment(post)
-                } else {
-                    showDetailsActivity(post)
+            .observe(this) { post ->
+                val post = post
+                if (viewModel.output.listOfPosts.value?.contains(post) == true) {
+                    if (twoPane) {
+                        showDetailsFragment(post)
+                    } else {
+                        showDetailsActivity(post)
+                    }
                 }
             }
 
         viewModel.output.closePostDetails
-            .observe(this) {
-                showDetailsFragment(null)
+            .observe(this) { event ->
+                if (!event.hasBeenHandled) {
+                    event.getContentIfNotHandled()
+                    showDetailsFragment(null)
+                }
             }
 
         viewModel.output.errorLoadingPage
-            .observe(this) {
-                val containerView = findViewById<FrameLayout>(R.id.frmListContainer) ?: return@observe
-                Snackbar.make(containerView, R.string.error_loading_posts, Snackbar.LENGTH_LONG)
-                    .show()
+            .observe(this) { event ->
+                if (!event.hasBeenHandled) {
+                    event.getContentIfNotHandled()
+                    val containerView =
+                        findViewById<FrameLayout>(R.id.frmListContainer) ?: return@observe
+                    Snackbar.make(containerView, R.string.error_loading_posts, Snackbar.LENGTH_LONG)
+                        .show()
+                }
             }
 
         viewModel.output.isRefreshing
@@ -133,8 +147,11 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.clearedAll
-            .observe(this) {
-                recyclerViewAdapter?.submitList(null)
+            .observe(this) { event ->
+                if (!event.hasBeenHandled) {
+                    event.getContentIfNotHandled()
+                    recyclerViewAdapter?.submitList(null)
+                }
             }
     }
 

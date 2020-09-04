@@ -36,7 +36,7 @@ class PostListViewModel(
      */
     class Output(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
-        val showPostDetails: LiveData<Event<RedditPost?>>,
+        val showPostDetails: LiveData<RedditPost>,
         val closePostDetails: LiveData<Event<Unit>>,
         val errorLoadingPage: LiveData<Event<Unit>>,
         val isRefreshing: LiveData<Boolean>,
@@ -71,13 +71,13 @@ class PostListViewModel(
 
     private fun initClosePostDetails(
         clearedAll: MutableLiveData<Event<Unit>>,
-        showPostDetails: MutableLiveData<Event<RedditPost?>>
+        showPostDetails: MutableLiveData<RedditPost>
     ) =
         MutableLiveData<Event<Unit>>().apply {
             input.onClickDismissPost
                 .asFlow()
                 .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
-                    Pair(dismissedPost, currentDetailsPost.peekContent())
+                    Pair(dismissedPost, currentDetailsPost)
                 }
                 .filter { it.first.id == it.second?.id } // If currently showing the post we're dismissing...
                 .onEach {
@@ -155,10 +155,9 @@ class PostListViewModel(
     }
 
     private fun initShowPostDetailsOutput(listOfPosts: LiveData<PagedList<RedditPost>>) =
-        MutableLiveData<Event<RedditPost?>>().apply {
+        MutableLiveData<RedditPost>().apply {
             input.onClickPostListItem
                 .asFlow()
-                .map(::Event)
                 .onEach(::postValue)
                 .launchIn(viewModelScope)
         }

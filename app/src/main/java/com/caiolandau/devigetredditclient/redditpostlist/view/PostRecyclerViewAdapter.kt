@@ -70,13 +70,11 @@ class PostRecyclerViewAdapter :
     companion object {
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RedditPost>() {
             override fun areItemsTheSame(oldItem: RedditPost, newItem: RedditPost): Boolean {
-                val areItemsTheSame = oldItem.id == newItem.id
-                return areItemsTheSame
+                return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(oldItem: RedditPost, newItem: RedditPost): Boolean {
-                val areContentsTheSame = oldItem == newItem
-                return areContentsTheSame
+                return oldItem == newItem
             }
         }
     }
