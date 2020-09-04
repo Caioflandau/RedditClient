@@ -11,7 +11,7 @@ class RedditPost(
     val entryDate: String,
     val thumbnailUrl: String?,
     val numOfComments: Int,
-    val isRead: Boolean
+    var isRead: Boolean = false
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",

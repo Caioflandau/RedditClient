@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.paging.PagedList
@@ -40,9 +41,11 @@ class PostRecyclerViewAdapter :
             placeholder(R.drawable.ic_reddit_logo)
             error(R.drawable.ic_reddit_logo)
         }
+        holder.frmUnreadIndicator.visibility = if (post.isRead) View.GONE else View.VISIBLE
 
         holder.itemView.setOnClickListener {
             onItemClickListener(post)
+            holder.frmUnreadIndicator.visibility = View.GONE
         }
         holder.btnDismissPost.setOnClickListener {
             onDismissListener(post)
@@ -51,7 +54,7 @@ class PostRecyclerViewAdapter :
 
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
-        holder.imgPostThumbnail.clear()
+        holder.imgPostThumbnail.clear() // Clears any pending image load request
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -61,19 +64,19 @@ class PostRecyclerViewAdapter :
         val txtPostCommentCount: TextView = view.findViewById(R.id.txtPostCommentCount)
         val imgPostThumbnail: ImageView = view.findViewById(R.id.imgPostThumbnail)
         val btnDismissPost: Button = view.findViewById(R.id.btnDismissPost)
+        val frmUnreadIndicator: FrameLayout = view.findViewById(R.id.frmUnreadIndicator)
     }
 
     companion object {
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<RedditPost>() {
             override fun areItemsTheSame(oldItem: RedditPost, newItem: RedditPost): Boolean {
-                Log.d("CFL", "areItemsTheSame")
-                return oldItem.name == newItem.name
+                val areItemsTheSame = oldItem.id == newItem.id
+                return areItemsTheSame
             }
 
-
             override fun areContentsTheSame(oldItem: RedditPost, newItem: RedditPost): Boolean {
-                Log.d("CFL", "areContentsTheSame")
-                return oldItem == newItem
+                val areContentsTheSame = oldItem == newItem
+                return areContentsTheSame
             }
         }
     }

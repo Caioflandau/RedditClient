@@ -2,6 +2,7 @@ package com.caiolandau.devigetredditclient.redditpostlist.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -67,7 +68,7 @@ class PostListActivityWrapper(
         val adapter = findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
         adapter?.apply {
             onItemClickListener = {
-                viewModel.input.onClickPostListItem.sendBlocking(it)
+                viewModel.input.onClickPostListItem.offer(it)
             }
         }
 
@@ -106,11 +107,17 @@ class PostListActivityWrapper(
         viewModel.output.showPostDetails
             .observe(this) { postEvent ->
                 val post = postEvent.getContentIfNotHandled()
+                Log.d("CFL", "showPostDetails $post")
                 if (twoPane) {
                     showDetailsFragment(post)
                 } else {
                     showDetailsActivity(post)
                 }
+            }
+
+        viewModel.output.closePostDetails
+            .observe(this) {
+                showDetailsFragment(null)
             }
 
         viewModel.output.errorLoadingPage

@@ -27,8 +27,7 @@ class RedditPostsResponseToRedditPostsPageConverter(
                     author = it.data.author,
                     entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
                     thumbnailUrl = getThumbnailUrl(it),
-                    numOfComments = it.data.numComments,
-                    isRead = false
+                    numOfComments = it.data.numComments
                 )
             }
         )

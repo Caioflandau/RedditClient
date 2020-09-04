@@ -1,5 +1,6 @@
 package com.caiolandau.devigetredditclient.redditpostlist.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -9,11 +10,8 @@ import com.caiolandau.devigetredditclient.domain.datasource.PagedRedditPostsData
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.*
 
 class PostListViewModel(
     dependency: Dependency = Dependency()
@@ -27,10 +25,10 @@ class PostListViewModel(
      * Represents input events - i.e. list item clicks - that are possible from the view:
      */
     class Input {
-        val onClickPostListItem: Channel<RedditPost> = Channel()
-        val onClickDismissPost: Channel<RedditPost> = Channel()
-        val onClickDismissAll: Channel<Unit> = Channel()
-        val onRefresh: Channel<Unit> = Channel()
+        val onClickPostListItem: BroadcastChannel<RedditPost> = BroadcastChannel(1)
+        val onClickDismissPost: BroadcastChannel<RedditPost> = BroadcastChannel(1)
+        val onClickDismissAll: BroadcastChannel<Unit> = BroadcastChannel(1)
+        val onRefresh: BroadcastChannel<Unit> = BroadcastChannel(1)
     }
 
     /**
@@ -39,6 +37,7 @@ class PostListViewModel(
     class Output(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
         val showPostDetails: LiveData<Event<RedditPost?>>,
+        val closePostDetails: LiveData<Event<Unit>>,
         val errorLoadingPage: LiveData<Event<Unit>>,
         val isRefreshing: LiveData<Boolean>,
         val clearedAll: LiveData<Event<Unit>>
@@ -59,18 +58,46 @@ class PostListViewModel(
         val isRefreshing =
             initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
         val clearedAll = initOutputClearedAll()
+        val closePostDetails = initClosePostDetails(clearedAll, showPostDetails)
         return Output(
             listOfPosts = listOfPosts,
             showPostDetails = showPostDetails,
+            closePostDetails = closePostDetails,
             errorLoadingPage = errorLoadingPage,
             isRefreshing = isRefreshing,
             clearedAll = clearedAll
         )
     }
 
+    private fun initClosePostDetails(
+        clearedAll: MutableLiveData<Event<Unit>>,
+        showPostDetails: MutableLiveData<Event<RedditPost?>>
+    ) =
+        MutableLiveData<Event<Unit>>().apply {
+            input.onClickDismissPost
+                .asFlow()
+                .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
+                    Pair(dismissedPost, currentDetailsPost.peekContent())
+                }
+                .filter { it.first.id == it.second?.id } // If currently showing the post we're dismissing...
+                .onEach {
+                    // ...emit a "close post details" event:
+                    postValue(Event(Unit))
+                }
+                .launchIn(viewModelScope)
+
+            // Emits a "close post details" event when clearing all posts:
+            clearedAll
+                .asFlow()
+                .onEach {
+                    postValue(Event(Unit))
+                }
+                .launchIn(viewModelScope)
+        }
+
     private fun initOutputClearedAll() = MutableLiveData<Event<Unit>>().apply {
         input.onClickDismissAll
-            .receiveAsFlow()
+            .asFlow()
             .onEach {
                 postValue(Event(Unit))
             }
@@ -83,7 +110,7 @@ class PostListViewModel(
         errorLoadingPage: LiveData<Event<Unit>>
     ) = MutableLiveData(true).apply {
         input.onRefresh
-            .receiveAsFlow()
+            .asFlow()
             .onEach {
                 // Invalidates local in-memory list of posts (causes data to be loaded from the
                 // API again next time)
@@ -103,10 +130,14 @@ class PostListViewModel(
                 postValue(false)
             }
 
-            override fun onRemoved(position: Int, count: Int) {}
-            override fun onChanged(position: Int, count: Int) {}
-        }
+            override fun onRemoved(position: Int, count: Int) {
+                postValue(false)
+            }
 
+            override fun onChanged(position: Int, count: Int) {
+                postValue(false)
+            }
+        }
 
         listOfPosts
             .asFlow()
@@ -123,25 +154,14 @@ class PostListViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun initShowPostDetailsOutput(
-        listOfPosts: LiveData<PagedList<RedditPost>>
-    ) = MutableLiveData<Event<RedditPost?>>().apply {
-        input.onClickPostListItem
-            .receiveAsFlow()
-            .map(::Event)
-            .onEach(::postValue)
-            .launchIn(viewModelScope)
-
-        listOfPosts
-            .asFlow()
-            .onEach {
-                if (it.loadedCount == 0) {
-                    // Clear details when refreshing:
-                    postValue(Event(null))
-                }
-            }
-            .launchIn(viewModelScope)
-    }
+    private fun initShowPostDetailsOutput(listOfPosts: LiveData<PagedList<RedditPost>>) =
+        MutableLiveData<Event<RedditPost?>>().apply {
+            input.onClickPostListItem
+                .asFlow()
+                .map(::Event)
+                .onEach(::postValue)
+                .launchIn(viewModelScope)
+        }
 
     private fun initListOfPostsOutput(
         dataSourceFactory: DataSource.Factory<String, RedditPost>,
@@ -154,9 +174,17 @@ class PostListViewModel(
         val pagedList = LivePagedListBuilder(dataSourceFactory, config).build()
 
         input.onClickDismissPost
-            .receiveAsFlow()
+            .asFlow()
             .onEach {
                 redditPostRepository.filterPost(it)
+                pagedList.value?.dataSource?.invalidate()
+            }
+            .launchIn(viewModelScope)
+
+        input.onClickPostListItem
+            .asFlow()
+            .onEach {
+                redditPostRepository.markPostAsRead(it)
                 pagedList.value?.dataSource?.invalidate()
             }
             .launchIn(viewModelScope)
