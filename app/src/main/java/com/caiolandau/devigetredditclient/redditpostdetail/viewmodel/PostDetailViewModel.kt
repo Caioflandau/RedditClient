@@ -26,7 +26,7 @@ class PostDetailViewModel(
      */
     class Output(
         val postTitle: LiveData<String>,
-        val postImageUrl: LiveData<String>,
+        val postImageUrl: LiveData<String?>,
         val postText: LiveData<String>,
         val openExternal: LiveData<Event<Uri>>,
         val isSaveImageButtonHidden: LiveData<Boolean>,
@@ -37,13 +37,24 @@ class PostDetailViewModel(
     val input = Input()
     val output = Output(
         postTitle = MutableLiveData(post.title),
-        postImageUrl = MutableLiveData(post.imageUrl),
+        postImageUrl = initPostImageUrl(post),
         postText = MutableLiveData(post.selfText),
         openExternal = initOpenMediaExternal(post),
         isSaveImageButtonHidden = initIsSaveImageButtonHidden(),
         saveImageToGallery = initSaveImageToGallery(post),
         isProgressBarHidden = iniIsProgressBarHidden()
     )
+
+    private fun initPostImageUrl(post: RedditPost): LiveData<String?> {
+        // Tries the main "URL" in the post, which can be the full-size image if one is available.
+        // If that fails (i.e. it's not an image), falls back to the thumbnail instead:
+        val imageUrlFlow = flow { emit(post.imageUrl) }
+        val errorLoadingImageFlow = input.onErrorLoadingImage.asFlow()
+            .map { post.thumbnailUrl }
+
+        return merge(imageUrlFlow, errorLoadingImageFlow)
+            .asLiveData(viewModelScope.coroutineContext)
+    }
 
     private fun iniIsProgressBarHidden() = merge(
         input.onImageLoadedSuccessfully.asFlow()
@@ -78,6 +89,15 @@ class PostDetailViewModel(
         .map { "reddit-${post.name}" }
         .map(::Event)
         .asLiveData(viewModelScope.coroutineContext)
+
+    override fun onCleared() {
+        super.onCleared()
+        input.onClickOpenExternal.close()
+        input.onClickOpenReddit.close()
+        input.onImageLoadedSuccessfully.close()
+        input.onClickSaveImage.close()
+        input.onErrorLoadingImage.close()
+    }
 
     private companion object {
         const val REDDIT_BASE_URL = "https://reddit.com"

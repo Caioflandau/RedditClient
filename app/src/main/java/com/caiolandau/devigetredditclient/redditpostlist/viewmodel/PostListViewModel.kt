@@ -1,6 +1,5 @@
 package com.caiolandau.devigetredditclient.redditpostlist.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -70,47 +69,29 @@ class PostListViewModel(
     }
 
     private fun initClosePostDetails(
-        clearedAll: MutableLiveData<Event<Unit>>,
-        showPostDetails: MutableLiveData<RedditPost>
-    ) =
-        MutableLiveData<Event<Unit>>().apply {
-            input.onClickDismissPost
-                .asFlow()
-                .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
-                    Pair(dismissedPost, currentDetailsPost)
-                }
-                .filter { it.first.id == it.second?.id } // If currently showing the post we're dismissing...
-                .onEach {
-                    // ...emit a "close post details" event:
-                    postValue(Event(Unit))
-                }
-                .launchIn(viewModelScope)
-
-            // Emits a "close post details" event when clearing all posts:
-            clearedAll
-                .asFlow()
-                .onEach {
-                    postValue(Event(Unit))
-                }
-                .launchIn(viewModelScope)
-        }
-
-    private fun initOutputClearedAll() = MutableLiveData<Event<Unit>>().apply {
-        input.onClickDismissAll
-            .asFlow()
-            .onEach {
-                postValue(Event(Unit))
+        clearedAll: LiveData<Event<Unit>>,
+        showPostDetails: LiveData<RedditPost>
+    ) = merge(
+        input.onClickDismissPost.asFlow()
+            .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
+                Pair(dismissedPost, currentDetailsPost)
             }
-            .launchIn(viewModelScope)
-    }
+            .filter { it.first.id == it.second?.id }, // If currently showing the post we're dismissing...
+
+        clearedAll.asFlow()
+    ).map { Event(Unit) }.asLiveData(viewModelScope.coroutineContext)
+
+    private fun initOutputClearedAll() = input.onClickDismissAll.asFlow()
+            .map { Event(Unit) }
+            .asLiveData(viewModelScope.coroutineContext)
+
 
     private fun initOutputIsRefreshing(
         redditPostRepository: RedditPostRepository,
         listOfPosts: LiveData<PagedList<RedditPost>>,
         errorLoadingPage: LiveData<Event<Unit>>
-    ) = MutableLiveData(true).apply {
-        input.onRefresh
-            .asFlow()
+    ): LiveData<Boolean> {
+        val onRefreshFlow = input.onRefresh.asFlow()
             .onEach {
                 // Invalidates local in-memory list of posts (causes data to be loaded from the
                 // API again next time)
@@ -119,48 +100,52 @@ class PostListViewModel(
                 // Invalidates the data source (causes a refresh in the paged list):
                 val dataSource = listOfPosts.value?.dataSource
                 dataSource?.invalidate()
-
-                // Set "isRefreshing" to true when beginning the refresh:
-                postValue(true)
             }
-            .launchIn(viewModelScope)
+            .map { true }
 
-        val onLoadCallback = object : PagedList.Callback() {
-            override fun onInserted(position: Int, count: Int) {
-                postValue(false)
+        val onErrorLoadingPageFlow = errorLoadingPage.asFlow()
+            .map { false }
+
+        val listOfPostsLiveData = MutableLiveData(true).apply {
+            val onLoadCallback = object : PagedList.Callback() {
+                override fun onInserted(position: Int, count: Int) {
+                    postValue(false)
+                }
+
+                override fun onRemoved(position: Int, count: Int) {
+                    postValue(false)
+                }
+
+                override fun onChanged(position: Int, count: Int) {
+                    postValue(false)
+                }
             }
 
-            override fun onRemoved(position: Int, count: Int) {
-                postValue(false)
-            }
-
-            override fun onChanged(position: Int, count: Int) {
-                postValue(false)
-            }
+            listOfPosts
+                .asFlow()
+                .onEach {
+                    // Set "isRefreshing" to false once a page is loaded:
+                    it.addWeakCallback(null, onLoadCallback)
+                }
+                .launchIn(viewModelScope)
         }
 
-        listOfPosts
-            .asFlow()
-            .onEach {
-                // Set "isRefreshing" to false once a page is loaded:
-                it.addWeakCallback(null, onLoadCallback)
+        return MediatorLiveData<Boolean>().apply {
+            addSource(listOfPostsLiveData) {
+                this.value = it
             }
-            .launchIn(viewModelScope)
 
-        errorLoadingPage
-            .asFlow()
-            .map { false }
-            .onEach(::postValue)
-            .launchIn(viewModelScope)
+            addSource(merge(
+                onRefreshFlow, onErrorLoadingPageFlow
+            ).asLiveData(viewModelScope.coroutineContext)) {
+                this.value = it
+            }
+        }
     }
 
     private fun initShowPostDetailsOutput(listOfPosts: LiveData<PagedList<RedditPost>>) =
-        MutableLiveData<RedditPost>().apply {
-            input.onClickPostListItem
-                .asFlow()
-                .onEach(::postValue)
-                .launchIn(viewModelScope)
-        }
+        input.onClickPostListItem.asFlow()
+            .asLiveData(viewModelScope.coroutineContext)
 
     private fun initListOfPostsOutput(
         dataSourceFactory: DataSource.Factory<String, RedditPost>,
@@ -189,6 +174,14 @@ class PostListViewModel(
             .launchIn(viewModelScope)
 
         return pagedList
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        input.onClickDismissAll.close()
+        input.onClickDismissPost.close()
+        input.onClickPostListItem.close()
+        input.onRefresh.close()
     }
 
     private companion object {
