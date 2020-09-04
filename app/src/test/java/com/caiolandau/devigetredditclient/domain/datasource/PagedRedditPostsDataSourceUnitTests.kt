@@ -48,7 +48,7 @@ class PagedRedditPostsDataSourceUnitTests {
         val params = PageKeyedDataSource.LoadInitialParams<String>(30, false)
         val callback: PageKeyedDataSource.LoadInitialCallback<String, RedditPost> = mockk(relaxed = true)
 
-        // When request fails
+        // When request fails:
         coEvery {
             mockRepo.topPostsTodayPage(30, null, null)
         } throws Exception()
@@ -71,27 +71,27 @@ class PagedRedditPostsDataSourceUnitTests {
         // When request is successful:
         val expectedResponse = RedditPostPage(listOf(mockk(), mockk(), mockk()), "bbb_ccc", "aaa_bbb")
         coEvery {
-            mockRepo.topPostsTodayPage(10, "aaa_bbb", null)
+            mockRepo.topPostsTodayPage(10, before ="aaa_bbb")
         } returns expectedResponse
 
         subject.loadBefore(params, callback)
 
         // Should call the callback with the loaded page:
-        verify { callback.onResult(expectedResponse.posts, expectedResponse.pageAfter) }
+        verify { callback.onResult(expectedResponse.posts, expectedResponse.pageBefore) }
     }
 
     @Test
     fun test_loadBefore_failure() = runBlockingTest {
         val subject = makeSubject(this)
-        val params = PageKeyedDataSource.LoadInitialParams<String>(30, false)
-        val callback: PageKeyedDataSource.LoadInitialCallback<String, RedditPost> = mockk(relaxed = true)
+        val params = PageKeyedDataSource.LoadParams<String>("aaa_bbb", 10)
+        val callback: PageKeyedDataSource.LoadCallback<String, RedditPost> = mockk(relaxed = true)
 
-        // When request fails
+        // When request fails:
         coEvery {
-            mockRepo.topPostsTodayPage(30, null, null)
+            mockRepo.topPostsTodayPage(10, before = "aaa_bbb")
         } throws Exception()
 
-        subject.loadInitial(params, callback)
+        subject.loadBefore(params, callback)
 
         // Should NOT call the callback
         confirmVerified(callback)
@@ -101,10 +101,44 @@ class PagedRedditPostsDataSourceUnitTests {
     }
 
     @Test
-    fun test_loadAfter() {
+    fun test_loadAfter_success() = runBlockingTest {
+        val subject = makeSubject(this)
+        val params = PageKeyedDataSource.LoadParams<String>("aaa_bbb", 10)
+        val callback: PageKeyedDataSource.LoadCallback<String, RedditPost> = mockk(relaxed = true)
+
+        // When request is successful:
+        val expectedResponse = RedditPostPage(listOf(mockk(), mockk(), mockk()), "bbb_ccc", "aaa_bbb")
+        coEvery {
+            mockRepo.topPostsTodayPage(10, after ="aaa_bbb")
+        } returns expectedResponse
+
+        subject.loadAfter(params, callback)
+
+        // Should call the callback with the loaded page:
+        verify { callback.onResult(expectedResponse.posts, expectedResponse.pageAfter) }
     }
 
-    fun makeSubject(scope: CoroutineScope): PagedRedditPostsDataSource {
+    @Test
+    fun test_loadAfter_failure() = runBlockingTest {
+        val subject = makeSubject(this)
+        val params = PageKeyedDataSource.LoadParams<String>("aaa_bbb", 10)
+        val callback: PageKeyedDataSource.LoadCallback<String, RedditPost> = mockk(relaxed = true)
+
+        // When request fails:
+        coEvery {
+            mockRepo.topPostsTodayPage(10, after = "aaa_bbb")
+        } throws Exception()
+
+        subject.loadBefore(params, callback)
+
+        // Should NOT call the callback
+        confirmVerified(callback)
+
+        // Should call the error callback
+        verify { mockOnErrorCallback.invoke() }
+    }
+
+    private fun makeSubject(scope: CoroutineScope): PagedRedditPostsDataSource {
         return PagedRedditPostsDataSource(mockRepo, scope, mockOnErrorCallback)
     }
 }
