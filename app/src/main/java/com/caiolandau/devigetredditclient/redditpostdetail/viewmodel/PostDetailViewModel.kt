@@ -18,6 +18,7 @@ class PostDetailViewModel(
         val onClickOpenReddit: BroadcastChannel<Unit> = BroadcastChannel(1)
         val onImageLoadedSuccessfully: BroadcastChannel<Unit> = BroadcastChannel(1)
         val onClickSaveImage: BroadcastChannel<Unit> = BroadcastChannel(1)
+        val onErrorLoadingImage: BroadcastChannel<Unit> = BroadcastChannel(1)
     }
 
     /**
@@ -29,7 +30,8 @@ class PostDetailViewModel(
         val postText: LiveData<String>,
         val openExternal: LiveData<Event<Uri>>,
         val isSaveImageButtonHidden: LiveData<Boolean>,
-        val saveImageToGallery: LiveData<Event<String>>
+        val saveImageToGallery: LiveData<Event<String>>,
+        val isProgressBarHidden: LiveData<Boolean>
     )
 
     val input = Input()
@@ -39,8 +41,17 @@ class PostDetailViewModel(
         postText = MutableLiveData(post.selfText),
         openExternal = initOpenMediaExternal(post),
         isSaveImageButtonHidden = initIsSaveImageButtonHidden(),
-        saveImageToGallery = initSaveImageToGallery(post)
+        saveImageToGallery = initSaveImageToGallery(post),
+        isProgressBarHidden = iniIsProgressBarHidden()
     )
+
+    private fun iniIsProgressBarHidden() = merge(
+        input.onImageLoadedSuccessfully.asFlow()
+            .map { true },
+
+        input.onErrorLoadingImage.asFlow()
+            .map { true }
+    ).asLiveData(viewModelScope.coroutineContext)
 
     private fun initOpenMediaExternal(post: RedditPost) = merge(
         input.onClickOpenExternal.asFlow()
@@ -55,11 +66,13 @@ class PostDetailViewModel(
             .map(::Event)
     ).asLiveData(viewModelScope.coroutineContext)
 
-    private fun initIsSaveImageButtonHidden() = input.onImageLoadedSuccessfully
-        .asFlow()
-        .map { false }
-        .onStart { emit(true) }
-        .asLiveData(viewModelScope.coroutineContext)
+    private fun initIsSaveImageButtonHidden() = merge(
+        input.onImageLoadedSuccessfully.asFlow()
+            .map { false },
+
+        input.onErrorLoadingImage.asFlow()
+            .map { true }
+    ).onStart { emit(true) }.asLiveData(viewModelScope.coroutineContext)
 
     private fun initSaveImageToGallery(post: RedditPost) = input.onClickSaveImage.asFlow()
         .map { "reddit-${post.name}" }

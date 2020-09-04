@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -71,6 +72,8 @@ class PostDetailFragment : Fragment() {
                 rootView.findViewById<ImageView>(R.id.imgPostImage).load(it) {
                     listener(onSuccess = { _, _ ->
                         viewModel.input.onImageLoadedSuccessfully.sendBlocking(Unit)
+                    }, onError = { _, _ ->
+                        viewModel.input.onErrorLoadingImage.sendBlocking(Unit)
                     })
                 }
             }
@@ -93,6 +96,12 @@ class PostDetailFragment : Fragment() {
                 val filename = filename.getContentIfNotHandled() ?: return@observe
                 saveImageToGallery(filename, rootView)
             }
+
+        viewModel.output.isProgressBarHidden
+            .observe(viewLifecycleOwner) {
+                val visibility = if (it) View.GONE else View.VISIBLE
+                rootView.findViewById<ProgressBar>(R.id.progressLoadingImage).visibility = visibility
+            }
     }
 
     private fun bindInput(rootView: View) {
@@ -103,8 +112,6 @@ class PostDetailFragment : Fragment() {
         rootView.findViewById<Button>(R.id.btnOpenReddit).setOnClickListener {
             viewModel.input.onClickOpenReddit.sendBlocking(Unit)
         }
-
-//        rootView.findViewById<ImageView>(R.id.imgPostImage).
 
         rootView.findViewById<Button>(R.id.btnSaveImage).setOnClickListener {
             viewModel.input.onClickSaveImage.sendBlocking(Unit)

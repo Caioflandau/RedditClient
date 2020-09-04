@@ -17,6 +17,12 @@
             android:padding="16dp"
             tools:text="Sed ut perspiciatis unde omnis iste natus error sit voluptatem" />
 
+        <ProgressBar
+            android:id="@+id/progressLoadingImage"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <ImageView
             android:id="@+id/imgPostImage"
             android:layout_width="match_parent"

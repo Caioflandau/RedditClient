@@ -68,7 +68,7 @@ class PostListActivityWrapper(
             findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
         adapter?.apply {
             onItemClickListener = {
-                viewModel.input.onClickPostListItem.offer(it)
+                viewModel.input.onClickPostListItem.sendBlocking(it)
             }
         }
 
