@@ -9,4 +9,6 @@
     <string name="accessibility_dismiss_this_post_button">Dismiss this post button</string>
     <string name="button_open_external">Open URL in external application</string>
     <string name="button_open_reddit_com">View on Reddit.com</string>
+    <string name="button_save_image">Save image to gallery</string>
+    <string name="image_saved_success_message">Image saved!</string>
 </resources>

@@ -5,10 +5,7 @@ import androidx.lifecycle.*
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.*
 
 class PostDetailViewModel(
     post: RedditPost
@@ -19,6 +16,8 @@ class PostDetailViewModel(
     class Input {
         val onClickOpenExternal: BroadcastChannel<Unit> = BroadcastChannel(1)
         val onClickOpenReddit: BroadcastChannel<Unit> = BroadcastChannel(1)
+        val onImageLoadedSuccessfully: BroadcastChannel<Unit> = BroadcastChannel(1)
+        val onClickSaveImage: BroadcastChannel<Unit> = BroadcastChannel(1)
     }
 
     /**
@@ -29,7 +28,8 @@ class PostDetailViewModel(
         val postImageUrl: LiveData<String>,
         val postText: LiveData<String>,
         val openExternal: LiveData<Event<Uri>>,
-        val isOpenExternalButtonHidden: LiveData<Boolean>
+        val isSaveImageButtonHidden: LiveData<Boolean>,
+        val saveImageToGallery: LiveData<Event<String>>
     )
 
     val input = Input()
@@ -38,7 +38,8 @@ class PostDetailViewModel(
         postImageUrl = MutableLiveData(post.imageUrl),
         postText = MutableLiveData(post.selfText),
         openExternal = initOpenMediaExternal(post),
-        isOpenExternalButtonHidden = MutableLiveData(post.imageUrl == null)
+        isSaveImageButtonHidden = initIsSaveImageButtonHidden(),
+        saveImageToGallery = initSaveImageToGallery(post)
     )
 
     private fun initOpenMediaExternal(post: RedditPost) = merge(
@@ -53,6 +54,17 @@ class PostDetailViewModel(
             .map { Uri.parse(it) }
             .map(::Event)
     ).asLiveData(viewModelScope.coroutineContext)
+
+    private fun initIsSaveImageButtonHidden() = input.onImageLoadedSuccessfully
+        .asFlow()
+        .map { false }
+        .onStart { emit(true) }
+        .asLiveData(viewModelScope.coroutineContext)
+
+    private fun initSaveImageToGallery(post: RedditPost) = input.onClickSaveImage.asFlow()
+        .map { "reddit-${post.name}" }
+        .map(::Event)
+        .asLiveData(viewModelScope.coroutineContext)
 
     private companion object {
         const val REDDIT_BASE_URL = "https://reddit.com"

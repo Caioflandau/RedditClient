@@ -1,7 +1,11 @@
 package com.caiolandau.devigetredditclient.redditpostdetail.view
 
+import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,9 +17,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import coil.load
+import coil.metadata
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.viewmodel.PostDetailViewModel
+import com.caiolandau.devigetredditclient.util.Event
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.channels.sendBlocking
 
 /**
@@ -61,7 +68,11 @@ class PostDetailFragment : Fragment() {
 
         viewModel.output.postImageUrl
             .observe(viewLifecycleOwner) {
-                rootView.findViewById<ImageView>(R.id.imgPostImage).load(it)
+                rootView.findViewById<ImageView>(R.id.imgPostImage).load(it) {
+                    listener(onSuccess = { _, _ ->
+                        viewModel.input.onImageLoadedSuccessfully.sendBlocking(Unit)
+                    })
+                }
             }
 
         viewModel.output.openExternal
@@ -71,10 +82,16 @@ class PostDetailFragment : Fragment() {
                 context?.startActivity(intent)
             }
 
-        viewModel.output.isOpenExternalButtonHidden
+        viewModel.output.isSaveImageButtonHidden
             .observe(viewLifecycleOwner) { isHidden ->
                 val visibility = if (isHidden) View.GONE else View.VISIBLE
-                rootView.findViewById<Button>(R.id.btnOpenExternal).visibility = visibility
+                rootView.findViewById<Button>(R.id.btnSaveImage).visibility = visibility
+            }
+
+        viewModel.output.saveImageToGallery
+            .observe(viewLifecycleOwner) { filename ->
+                val filename = filename.getContentIfNotHandled() ?: return@observe
+                saveImageToGallery(filename, rootView)
             }
     }
 
@@ -86,6 +103,32 @@ class PostDetailFragment : Fragment() {
         rootView.findViewById<Button>(R.id.btnOpenReddit).setOnClickListener {
             viewModel.input.onClickOpenReddit.sendBlocking(Unit)
         }
+
+//        rootView.findViewById<ImageView>(R.id.imgPostImage).
+
+        rootView.findViewById<Button>(R.id.btnSaveImage).setOnClickListener {
+            viewModel.input.onClickSaveImage.sendBlocking(Unit)
+        }
+    }
+
+    private fun saveImageToGallery(
+        filename: String,
+        rootView: View
+    ) {
+        val resolver = context?.applicationContext?.contentResolver ?: return
+        val drawable = rootView.findViewById<ImageView>(R.id.imgPostImage).drawable
+        val bitmap = (drawable as? BitmapDrawable)?.bitmap ?: return
+        val imageDetails = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+        }
+        val imageCollection =
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val imageContentUri = resolver.insert(imageCollection, imageDetails) ?: return
+        val out = resolver.openOutputStream(imageContentUri, "w")
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out?.close()
+        Snackbar.make(rootView, R.string.image_saved_success_message, Snackbar.LENGTH_LONG)
+            .show()
     }
 
     private fun getViewModel(post: RedditPost): PostDetailViewModel {
