@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.widget.Button
+import android.widget.FrameLayout
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -20,6 +20,7 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivity
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
 import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
+import com.caiolandau.devigetredditclient.util.Event
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -76,6 +77,9 @@ class PostListActivityUnitTests {
     @MockK
     private lateinit var frmPostDetailContainer: NestedScrollView
 
+    @MockK
+    private lateinit var frmListContainer: FrameLayout
+
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxed = true)
@@ -86,6 +90,7 @@ class PostListActivityUnitTests {
         every { mockActivity.findViewById<RecyclerView>(R.id.recyclerViewPosts) } returns recyclerViewPosts
         every { mockActivity.findViewById<SwipeRefreshLayout>(R.id.swiperefresh) } returns swiperefresh
         every { mockActivity.findViewById<Button>(R.id.btnClearAll) } returns btnClearAll
+        every { mockActivity.findViewById<FrameLayout>(R.id.frmListContainer) } returns frmListContainer
 
         every { recyclerViewPosts.adapter } returns mockAdapter
     }
@@ -301,6 +306,7 @@ class PostListActivityUnitTests {
         showPostDetailsOutput.postValue(mockRedditPost)
 
         verify(exactly = 1) { mockFragmentTransaction.replace(any(), mockPostDetailFragment) }
+        verify(exactly = 1) { mockFragmentTransaction.commit() }
 
         showPostDetailsOutput.removeObserver(observer)
     }
@@ -343,6 +349,101 @@ class PostListActivityUnitTests {
         verify { mockContext.startActivity(mockIntent) }
 
         showPostDetailsOutput.removeObserver(observer)
+    }
+
+    @Test
+    fun test_onCreate_output_closePostDetails() = runBlockingTest {
+        // Mock the FragmentManager:
+        val mockFragmentTransaction = mockk<FragmentTransaction>(relaxed = true)
+        every {
+            mockActivity.getSupportFragmentManager().findFragmentById(R.id.frmPostDetailContainer)
+        } returns mockPostDetailFragment
+        every {
+            mockActivity.getSupportFragmentManager().beginTransaction()
+        } returns mockFragmentTransaction
+        every {
+            mockFragmentTransaction.remove(mockPostDetailFragment)
+        } returns mockFragmentTransaction
+
+        // Mock the output we're testing:
+        val closePostDetailsOutput = MutableLiveData<Event<Unit>>()
+        every { mockViewModel.output.closePostDetails } returns closePostDetailsOutput
+        val observer: (Event<Unit>) -> Unit = {}
+
+        val subject = makeSubject()
+        closePostDetailsOutput.observeForever(observer)
+        setupSubject(subject)
+
+        closePostDetailsOutput.postValue(Event(Unit))
+
+        verify(exactly = 1) { mockFragmentTransaction.remove(mockPostDetailFragment) }
+        verify(exactly = 1) { mockFragmentTransaction.commit() }
+
+        closePostDetailsOutput.removeObserver(observer)
+    }
+
+    @Test
+    fun test_onCreate_output_errorLoadingPage() = runBlockingTest {
+        // Mock the output we're testing:
+        val errorLoadingPageOutput = MutableLiveData<Event<Unit>>()
+        every { mockViewModel.output.errorLoadingPage } returns errorLoadingPageOutput
+        val observer: (Event<Unit>) -> Unit = {}
+
+        val subject = makeSubject()
+        errorLoadingPageOutput.observeForever(observer)
+        setupSubject(subject)
+
+        errorLoadingPageOutput.postValue(Event(Unit))
+
+        verify { mockSnackbarHelper.showSnackbar(frmListContainer, R.string.error_loading_posts) }
+    }
+
+    @Test
+    fun test_onCreate_output_isRefreshing_true() = runBlockingTest {
+        // Mock the output we're testing:
+        val isRefreshingOutput = MutableLiveData<Boolean>()
+        every { mockViewModel.output.isRefreshing } returns isRefreshingOutput
+        val observer: (Boolean) -> Unit = {}
+
+        val subject = makeSubject()
+        isRefreshingOutput.observeForever(observer)
+        setupSubject(subject)
+
+        isRefreshingOutput.postValue(true)
+
+        verify { swiperefresh.isRefreshing = true }
+    }
+
+    @Test
+    fun test_onCreate_output_isRefreshing_false() = runBlockingTest {
+        // Mock the output we're testing:
+        val isRefreshingOutput = MutableLiveData<Boolean>()
+        every { mockViewModel.output.isRefreshing } returns isRefreshingOutput
+        val observer: (Boolean) -> Unit = {}
+
+        val subject = makeSubject()
+        isRefreshingOutput.observeForever(observer)
+        setupSubject(subject)
+
+        isRefreshingOutput.postValue(false)
+
+        verify { swiperefresh.isRefreshing = false }
+    }
+
+    @Test
+    fun test_onCreate_output_clearedAll() = runBlockingTest {
+        // Mock the output we're testing:
+        val clearedAllOutput = MutableLiveData<Event<Unit>>()
+        every { mockViewModel.output.clearedAll } returns clearedAllOutput
+        val observer: (Event<Unit>) -> Unit = {}
+
+        val subject = makeSubject()
+        clearedAllOutput.observeForever(observer)
+        setupSubject(subject)
+
+        clearedAllOutput.postValue(Event(Unit))
+
+        verify { mockAdapter.submitList(null) }
     }
 
     // Calls onCreate and emits ON_RESUME lifecycle event to mimic a regular Activity
