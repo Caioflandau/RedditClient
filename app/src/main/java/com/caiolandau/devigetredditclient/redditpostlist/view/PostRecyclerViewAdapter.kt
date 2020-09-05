@@ -12,12 +12,15 @@ import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import coil.ImageLoader
 import coil.clear
 import coil.load
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 
-class PostRecyclerViewAdapter :
+class PostRecyclerViewAdapter(
+    private val imageLoader: ImageLoader
+) :
     PagedListAdapter<RedditPost, PostRecyclerViewAdapter.ViewHolder>(DIFF_CALLBACK) {
     var onItemClickListener: ((RedditPost) -> Unit) = {}
     var onDismissListener: ((RedditPost) -> Unit) = {}
@@ -29,32 +32,35 @@ class PostRecyclerViewAdapter :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val context = holder.itemView.context
-
-        val post = getItem(position) ?: return
-        holder.txtPosterName.text = post.author
-        holder.txtPostTime.text = post.entryDate
-        holder.txtPostTitle.text = post.title
-        holder.txtPostCommentCount.text =
-            context.getString(R.string.num_of_comments, post.numOfComments)
-        holder.imgPostThumbnail.load(post.thumbnailUrl) {
-            placeholder(R.drawable.ic_reddit_logo)
-            error(R.drawable.ic_reddit_logo)
-        }
-        holder.frmUnreadIndicator.visibility = if (post.isRead) View.GONE else View.VISIBLE
-
-        holder.itemView.setOnClickListener {
-            onItemClickListener(post)
-            holder.frmUnreadIndicator.visibility = View.GONE
-        }
-        holder.btnDismissPost.setOnClickListener {
-            onDismissListener(post)
-        }
+        bindViewHolder(getItem(position) ?: return, holder)
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
         holder.imgPostThumbnail.clear() // Clears any pending image load request
+    }
+
+    fun bindViewHolder(post: RedditPost, viewHolder: ViewHolder) = viewHolder.apply {
+        val context = itemView.context
+
+        txtPosterName.text = post.author
+        txtPostTime.text = post.entryDate
+        txtPostTitle.text = post.title
+        txtPostCommentCount.text =
+            context.getString(R.string.num_of_comments, post.numOfComments)
+        imgPostThumbnail.load(post.thumbnailUrl, imageLoader) {
+            placeholder(R.drawable.ic_reddit_logo)
+            error(R.drawable.ic_reddit_logo)
+        }
+        frmUnreadIndicator.visibility = if (post.isRead) View.GONE else View.VISIBLE
+
+        itemView.setOnClickListener {
+            onItemClickListener(post)
+            frmUnreadIndicator.visibility = View.GONE
+        }
+        btnDismissPost.setOnClickListener {
+            onDismissListener(post)
+        }
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {

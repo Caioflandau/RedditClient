@@ -11,6 +11,7 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import coil.ImageLoader
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivity
@@ -197,7 +198,7 @@ class PostListActivityWrapper(
             )
         )
 
-        recyclerView?.adapter = PostRecyclerViewAdapter()
+        recyclerView?.adapter = PostRecyclerViewAdapter(ImageLoader.Builder(context).build())
     }
 }
 

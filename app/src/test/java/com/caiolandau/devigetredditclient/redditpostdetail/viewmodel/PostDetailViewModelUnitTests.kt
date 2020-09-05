@@ -3,6 +3,7 @@ package com.caiolandau.devigetredditclient.redditpostdetail.viewmodel
 import android.net.Uri
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
+import com.caiolandau.devigetredditclient.test_utils.makeRedditPost
 import com.caiolandau.devigetredditclient.util.Event
 import io.mockk.every
 import io.mockk.mockk
@@ -38,13 +39,13 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_postTitle() = runBlockingTest {
-        val subject = makeSubject(makePost(title = "This is the title"))
+        val subject = makeSubject(makeRedditPost(title = "This is the title"))
         assertEquals("This is the title", subject.output.postTitle.value)
     }
 
     @Test
     fun test_postImageUrl() = runBlockingTest {
-        val subject = makeSubject(makePost(imageUrl = "https://aaa.com/bbb.jpg"))
+        val subject = makeSubject(makeRedditPost(imageUrl = "https://aaa.com/bbb.jpg"))
         val observer: (t: String?) -> Unit = {}
         subject.output.postImageUrl.observeForever(observer)
 
@@ -56,7 +57,7 @@ class PostDetailViewModelUnitTests {
     @Test
     fun test_postImageUrl_whenImageFails_fallbackToThumbnail() = runBlockingTest {
         val subject = makeSubject(
-            makePost(
+            makeRedditPost(
                 imageUrl = "https://aaa.com/bbb.jpg",
                 thumbnailUrl = "https://thumb.com/image.jpg"
             )
@@ -72,13 +73,13 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_postText() = runBlockingTest {
-        val subject = makeSubject(makePost(selfText = "This is the self-text"))
+        val subject = makeSubject(makeRedditPost(selfText = "This is the self-text"))
         assertEquals("This is the self-text", subject.output.postText.value)
     }
 
     @Test
     fun test_openExternal_openUrl() = runBlockingTest {
-        val subject = makeSubject(makePost(imageUrl = "https://test.url.com/"))
+        val subject = makeSubject(makeRedditPost(imageUrl = "https://test.url.com/"))
         val observer: (t: Event<Uri>?) -> Unit = {}
         subject.output.openExternal.observeForever(observer)
 
@@ -94,7 +95,7 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_openExternal_openOnReddit() = runBlockingTest {
-        val subject = makeSubject(makePost(permalink = "/r/aaa/1234"))
+        val subject = makeSubject(makeRedditPost(permalink = "/r/aaa/1234"))
         val observer: (t: Event<Uri>?) -> Unit = {}
         subject.output.openExternal.observeForever(observer)
 
@@ -110,7 +111,7 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_saveImageToGallery() = runBlockingTest {
-        val subject = makeSubject(makePost(name = "aaa_bbb"))
+        val subject = makeSubject(makeRedditPost(name = "aaa_bbb"))
         val observer: (t: Event<String>?) -> Unit = {}
         subject.output.saveImageToGallery.observeForever(observer)
 
@@ -193,35 +194,9 @@ class PostDetailViewModelUnitTests {
     }
 
     private fun makeSubject(
-        post: RedditPost = makePost()
+        post: RedditPost = makeRedditPost()
     ): PostDetailViewModel {
         currentPost = post
         return PostDetailViewModel(post)
     }
-
-    private fun makePost(
-        id: String = UUID.randomUUID().toString(),
-        name: String = UUID.randomUUID().toString(),
-        title: String = UUID.randomUUID().toString(),
-        author: String = UUID.randomUUID().toString(),
-        selfText: String? = UUID.randomUUID().toString(),
-        permalink: String = "/r/aaa/${UUID.randomUUID()}",
-        entryDate: String = UUID.randomUUID().toString(),
-        imageUrl: String? = "https://url.com/${UUID.randomUUID()}",
-        thumbnailUrl: String? = "https://thumb.url.com/${UUID.randomUUID()}",
-        numOfComments: Int = Random.nextInt(),
-        isRead: Boolean = false
-    ) = RedditPost(
-        id = id,
-        name = name,
-        title = title,
-        author = author,
-        selfText = selfText,
-        permalink = permalink,
-        entryDate = entryDate,
-        imageUrl = imageUrl,
-        thumbnailUrl = thumbnailUrl,
-        numOfComments = numOfComments,
-        isRead = isRead
-    )
 }
