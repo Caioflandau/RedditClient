@@ -21,6 +21,7 @@ import coil.load
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.viewmodel.PostDetailViewModel
+import com.caiolandau.devigetredditclient.util.IFragment
 import com.caiolandau.devigetredditclient.util.LocalImageSaver
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import com.google.android.material.snackbar.Snackbar
@@ -34,22 +35,15 @@ import java.lang.ref.WeakReference
  * or a [PostDetailActivity] on handsets.
  */
 
-interface IFragment {
-    val ctx: Context?
-    val args: Bundle?
-    val viewLifecycleOwner: LifecycleOwner
-    fun getViewModel(post: RedditPost): PostDetailViewModel
-}
-
 class PostDetailFragmentWrapper(
-    fragment: IFragment,
+    fragment: IFragment<RedditPost, PostDetailViewModel>,
     private val imageLoader: ImageLoader,
     private val localImageSaver: LocalImageSaver = LocalImageSaver(),
     private val snackbarHelper: SnackbarHelper = SnackbarHelper()
 ) {
     // Keeping a weak reference to the fragment prevents a reference loop (and memory leak):
-    private val weakFragment: WeakReference<IFragment> = WeakReference(fragment)
-    private val fragment: IFragment?
+    private val weakFragment: WeakReference<IFragment<RedditPost, PostDetailViewModel>> = WeakReference(fragment)
+    private val fragment: IFragment<RedditPost, PostDetailViewModel>?
         get() = weakFragment.get()
 
     lateinit var viewModel: PostDetailViewModel
@@ -156,7 +150,7 @@ class PostDetailFragmentWrapper(
     }
 }
 
-class PostDetailFragment : Fragment(), IFragment {
+class PostDetailFragment : Fragment(), IFragment<RedditPost, PostDetailViewModel> {
     // In order to avoid needing something like Robolectric to test fragment logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
     // Fragment business logic. The actual Fragment subclass is just a shell.

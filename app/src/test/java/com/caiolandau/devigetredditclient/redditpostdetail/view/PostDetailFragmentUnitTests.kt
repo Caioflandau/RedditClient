@@ -19,12 +19,16 @@ import androidx.lifecycle.MutableLiveData
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.caiolandau.devigetredditclient.R
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostdetail.viewmodel.PostDetailViewModel
 import com.caiolandau.devigetredditclient.util.Event
+import com.caiolandau.devigetredditclient.util.IFragment
 import com.caiolandau.devigetredditclient.util.LocalImageSaver
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,6 +39,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@FlowPreview @ExperimentalCoroutinesApi
 class PostDetailFragmentUnitTests {
 
     @Rule
@@ -43,10 +48,8 @@ class PostDetailFragmentUnitTests {
 
     private lateinit var lifecycle: LifecycleRegistry
 
-
-
     @MockK(relaxed = true)
-    private lateinit var mockFragment: IFragment
+    private lateinit var mockFragment: IFragment<RedditPost, PostDetailViewModel>
 
     @MockK
     private lateinit var mockInflater: LayoutInflater
