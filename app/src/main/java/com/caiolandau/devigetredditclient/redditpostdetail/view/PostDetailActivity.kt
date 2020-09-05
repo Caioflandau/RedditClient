@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.caiolandau.devigetredditclient.R
 import com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity
 import com.caiolandau.devigetredditclient.util.IActivity
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import java.lang.ref.WeakReference
 
 /**
@@ -18,7 +16,18 @@ import java.lang.ref.WeakReference
  * in a [PostListActivity].
  */
 class PostDetailActivityWrapper(
-    activity: IActivity
+    activity: IActivity,
+    private val makePostDetailFragment: (Intent) -> PostDetailFragment = { intent ->
+        PostDetailFragment()
+            .apply {
+                arguments = Bundle().apply {
+                    putParcelable(
+                        PostDetailFragment.ARG_POST,
+                        intent.getParcelableExtra(PostDetailFragment.ARG_POST)
+                    )
+                }
+            }
+    }
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
     private val weakActivity: WeakReference<IActivity> = WeakReference(activity)
@@ -26,11 +35,6 @@ class PostDetailActivityWrapper(
         get() = weakActivity.get()
 
     fun onCreate(savedInstanceState: Bundle?) = activity?.apply {
-        findViewById<FloatingActionButton>(R.id.fab)?.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-
         // Show the Up button in the action bar.
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 
@@ -38,24 +42,11 @@ class PostDetailActivityWrapper(
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
         // In this case, the fragment will automatically be re-added
-        // to its container so we don"t need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
-        //
+        // to its container so we don't need to manually add it.
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            val fragment = PostDetailFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putParcelable(
-                            PostDetailFragment.ARG_POST,
-                            getIntent().getParcelableExtra(PostDetailFragment.ARG_POST)
-                        )
-                    }
-                }
-
+            val fragment = makePostDetailFragment(getIntent())
 
             getSupportFragmentManager().beginTransaction()
                 .add(R.id.frmPostDetailContainer, fragment)
