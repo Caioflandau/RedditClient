@@ -1,10 +1,15 @@
 package com.caiolandau.devigetredditclient.domain.repository.converter
 
-import android.text.format.DateUtils
+import com.caiolandau.devigetredditclient.util.DateUtilsWrapper
+import java.time.Clock
 
 class EpochToRelativeTimeConverter {
-    fun convert(epoch: Double): String {
-        val nowUtc = System.currentTimeMillis() // currentTimeMillis always returns UTC timestamps
-        return DateUtils.getRelativeTimeSpanString(epoch.toLong()*1000L, nowUtc, 0L).toString()
+    fun convert(
+        epochUTCSeconds: Long,
+        clock: Clock = Clock.systemUTC(),
+        dateUtilsWrapper: DateUtilsWrapper = DateUtilsWrapper()
+    ): String {
+        val nowUtc = clock.millis()
+        return dateUtilsWrapper.getRelativeTimeSpanString(epochUTCSeconds * 1000L, nowUtc, 0L)
     }
 }
