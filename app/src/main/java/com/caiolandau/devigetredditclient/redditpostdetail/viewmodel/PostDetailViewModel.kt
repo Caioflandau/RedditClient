@@ -35,15 +35,17 @@ class PostDetailViewModel(
     )
 
     val input = Input()
-    val output = Output(
-        postTitle = MutableLiveData(post.title),
-        postImageUrl = initPostImageUrl(post),
-        postText = MutableLiveData(post.selfText),
-        openExternal = initOpenMediaExternal(post),
-        isSaveImageButtonHidden = initIsSaveImageButtonHidden(),
-        saveImageToGallery = initSaveImageToGallery(post),
-        isProgressBarHidden = iniIsProgressBarHidden()
-    )
+    val output: Output by lazy {
+        Output(
+            postTitle = MutableLiveData(post.title),
+            postImageUrl = initPostImageUrl(post),
+            postText = MutableLiveData(post.selfText),
+            openExternal = initOpenMediaExternal(post),
+            isSaveImageButtonHidden = initIsSaveImageButtonHidden(),
+            saveImageToGallery = initSaveImageToGallery(post),
+            isProgressBarHidden = iniIsProgressBarHidden()
+        )
+    }
 
     private fun initPostImageUrl(post: RedditPost): LiveData<String?> {
         // Tries the main "URL" in the post, which can be the full-size image if one is available.

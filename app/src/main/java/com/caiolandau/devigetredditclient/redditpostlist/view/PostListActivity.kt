@@ -17,6 +17,7 @@ import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailActivi
 import com.caiolandau.devigetredditclient.redditpostdetail.view.PostDetailFragment
 import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewModel
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
+import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
@@ -32,7 +33,8 @@ import java.lang.ref.WeakReference
  * using two vertical panes.
  */
 class PostListActivityWrapper(
-    activity: IViewModelActivity<PostListViewModel>
+    activity: IViewModelActivity<PostListViewModel>,
+    private val snackbarHelper: SnackbarHelper = SnackbarHelper()
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
     private val weakActivity: WeakReference<IViewModelActivity<PostListViewModel>> = WeakReference(
@@ -136,8 +138,7 @@ class PostListActivityWrapper(
                     event.getContentIfNotHandled()
                     val containerView =
                         findViewById<FrameLayout>(R.id.frmListContainer) ?: return@observe
-                    Snackbar.make(containerView, R.string.error_loading_posts, Snackbar.LENGTH_LONG)
-                        .show()
+                    snackbarHelper.showSnackbar(containerView, R.string.error_loading_posts)
                 }
             }
 
