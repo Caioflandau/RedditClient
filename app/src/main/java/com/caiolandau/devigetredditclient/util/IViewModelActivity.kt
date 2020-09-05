@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
  */
 interface IViewModelActivity<VM: ViewModel>: IActivity, LifecycleOwner {
     fun getViewModel(): VM
+    fun lifecycleOwner(): LifecycleOwner = this
 }
 
 /**

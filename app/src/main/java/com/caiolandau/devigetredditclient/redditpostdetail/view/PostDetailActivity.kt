@@ -1,10 +1,12 @@
 package com.caiolandau.devigetredditclient.redditpostdetail.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.caiolandau.devigetredditclient.R
+import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.redditpostlist.view.PostListActivity
 import com.caiolandau.devigetredditclient.util.IActivity
 import java.lang.ref.WeakReference
@@ -88,4 +90,11 @@ class PostDetailActivity : AppCompatActivity(), IActivity {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = activityWrapper.onOptionsItemSelected(item)
+
+    companion object {
+        fun newIntent(context: Context, post: RedditPost): Intent =
+            Intent(context, PostDetailActivity::class.java).apply {
+                putExtra(PostDetailFragment.ARG_POST, post)
+            }
+    }
 }

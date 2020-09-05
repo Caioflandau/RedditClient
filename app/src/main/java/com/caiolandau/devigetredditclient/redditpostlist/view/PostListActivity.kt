@@ -34,7 +34,15 @@ import java.lang.ref.WeakReference
  */
 class PostListActivityWrapper(
     activity: IViewModelActivity<PostListViewModel>,
-    private val snackbarHelper: SnackbarHelper = SnackbarHelper()
+    private val snackbarHelper: SnackbarHelper = SnackbarHelper(),
+    private val makePostDetailFragment: (RedditPost) -> PostDetailFragment = { post ->
+        PostDetailFragment()
+            .apply {
+                arguments = Bundle().apply {
+                    putParcelable(PostDetailFragment.ARG_POST, post)
+                }
+            }
+    }
 ) {
     // Keeping a weak reference to the activity prevents a reference loop (and memory leak):
     private val weakActivity: WeakReference<IViewModelActivity<PostListViewModel>> = WeakReference(
@@ -43,7 +51,6 @@ class PostListActivityWrapper(
     private val activity: IViewModelActivity<PostListViewModel>?
         get() = weakActivity.get()
 
-    private var recyclerViewAdapter: PostRecyclerViewAdapter? = null
     private lateinit var pagedListCallback: PagedList.Callback
 
     /**
@@ -90,30 +97,32 @@ class PostListActivityWrapper(
     }
 
     private fun bindOutput(viewModel: PostListViewModel) = activity?.apply {
+        val adapter =
+            findViewById<RecyclerView>(R.id.recyclerViewPosts)?.adapter as? PostRecyclerViewAdapter
         viewModel.output.listOfPosts
-            .observe(this) { posts ->
+            .observe(lifecycleOwner()) { posts ->
                 pagedListCallback = object : PagedList.Callback() {
                     override fun onChanged(position: Int, count: Int) {
-                        recyclerViewAdapter?.submitList(posts)
+                        adapter?.submitList(posts)
                     }
 
                     override fun onInserted(position: Int, count: Int) {
-                        recyclerViewAdapter?.submitList(posts)
+                        adapter?.submitList(posts)
                     }
 
                     override fun onRemoved(position: Int, count: Int) {
-                        recyclerViewAdapter?.submitList(posts)
+                        adapter?.submitList(posts)
                     }
                 }
                 if (posts.size > 0) {
-                    recyclerViewAdapter?.submitList(posts)
+                    adapter?.submitList(posts)
                 } else {
                     posts.addWeakCallback(null, pagedListCallback)
                 }
             }
 
         viewModel.output.showPostDetails
-            .observe(this) { post ->
+            .observe(lifecycleOwner()) { post ->
                 val post = post
                 if (viewModel.output.listOfPosts.value?.contains(post) == true) {
                     if (twoPane) {
@@ -125,7 +134,7 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.closePostDetails
-            .observe(this) { event ->
+            .observe(lifecycleOwner()) { event ->
                 if (!event.hasBeenHandled) {
                     event.getContentIfNotHandled()
                     showDetailsFragment(null)
@@ -133,7 +142,7 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.errorLoadingPage
-            .observe(this) { event ->
+            .observe(lifecycleOwner()) { event ->
                 if (!event.hasBeenHandled) {
                     event.getContentIfNotHandled()
                     val containerView =
@@ -143,24 +152,22 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.isRefreshing
-            .observe(this) {
+            .observe(lifecycleOwner()) {
                 findViewById<SwipeRefreshLayout>(R.id.swiperefresh)?.isRefreshing = it
             }
 
         viewModel.output.clearedAll
-            .observe(this) { event ->
+            .observe(lifecycleOwner()) { event ->
                 if (!event.hasBeenHandled) {
                     event.getContentIfNotHandled()
-                    recyclerViewAdapter?.submitList(null)
+                    adapter?.submitList(null)
                 }
             }
     }
 
     private fun showDetailsActivity(post: RedditPost?) = activity?.apply {
         post ?: return@apply
-        val intent = Intent(context, PostDetailActivity::class.java).apply {
-            putExtra(PostDetailFragment.ARG_POST, post)
-        }
+        val intent = PostDetailActivity.newIntent(context, post)
         context.startActivity(intent)
     }
 
@@ -173,12 +180,7 @@ class PostListActivityWrapper(
                     .commit()
             }
         } else {
-            val fragment = PostDetailFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putParcelable(PostDetailFragment.ARG_POST, post)
-                    }
-                }
+            val fragment = makePostDetailFragment(post)
             getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.frmPostDetailContainer, fragment)
@@ -195,8 +197,7 @@ class PostListActivityWrapper(
             )
         )
 
-        recyclerViewAdapter = PostRecyclerViewAdapter()
-        recyclerView?.adapter = recyclerViewAdapter
+        recyclerView?.adapter = PostRecyclerViewAdapter()
     }
 }
 
