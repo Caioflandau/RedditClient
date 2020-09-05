@@ -59,7 +59,7 @@ class RedditPost(
         if (title != other.title) return false
         if (author != other.author) return false
         if (selfText != other.selfText) return false
-        if (selfText != other.permalink) return false
+        if (permalink != other.permalink) return false
         if (entryDate != other.entryDate) return false
         if (imageUrl != other.imageUrl) return false
         if (thumbnailUrl != other.thumbnailUrl) return false
@@ -74,6 +74,8 @@ class RedditPost(
         result = 31 * result + name.hashCode()
         result = 31 * result + title.hashCode()
         result = 31 * result + author.hashCode()
+        result = 31 * result + (selfText?.hashCode() ?: 0)
+        result = 31 * result + permalink.hashCode()
         result = 31 * result + entryDate.hashCode()
         result = 31 * result + (imageUrl?.hashCode() ?: 0)
         result = 31 * result + (thumbnailUrl?.hashCode() ?: 0)
@@ -81,6 +83,7 @@ class RedditPost(
         result = 31 * result + isRead.hashCode()
         return result
     }
+
 
     companion object CREATOR : Parcelable.Creator<RedditPost> {
         override fun createFromParcel(parcel: Parcel): RedditPost {
