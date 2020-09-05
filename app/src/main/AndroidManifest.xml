@@ -24,7 +24,7 @@
         </activity>
         <activity
             android:name=".redditpostdetail.view.PostDetailActivity"
-            android:label="@string/title_item_detail"
+            android:label="@string/title_post_detail"
             android:parentActivityName=".redditpostlist.view.PostListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

@@ -82,7 +82,7 @@ class PostDetailActivity : AppCompatActivity(), IActivity {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_detail)
-        setSupportActionBar(findViewById(R.id.detail_toolbar))
+        setSupportActionBar(findViewById(R.id.toolbarDetail))
 
         activityWrapper.onCreate(savedInstanceState)
     }
