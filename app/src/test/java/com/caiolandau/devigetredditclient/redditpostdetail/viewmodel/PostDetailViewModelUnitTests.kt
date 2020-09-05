@@ -29,8 +29,6 @@ class PostDetailViewModelUnitTests {
 
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
 
-    lateinit var currentPost: RedditPost
-
     @Before
     fun setUp() {
         Dispatchers.setMain(testCoroutineDispatcher)
@@ -196,7 +194,6 @@ class PostDetailViewModelUnitTests {
     private fun makeSubject(
         post: RedditPost = makeRedditPost()
     ): PostDetailViewModel {
-        currentPost = post
         return PostDetailViewModel(post)
     }
 }

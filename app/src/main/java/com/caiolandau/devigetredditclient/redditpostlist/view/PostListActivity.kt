@@ -198,7 +198,8 @@ class PostListActivityWrapper(
             )
         )
 
-        recyclerView?.adapter = PostRecyclerViewAdapter(ImageLoader.Builder(context).build())
+        recyclerView?.adapter = recyclerView?.adapter ?:
+                PostRecyclerViewAdapter(ImageLoader.Builder(context).build())
     }
 }
 

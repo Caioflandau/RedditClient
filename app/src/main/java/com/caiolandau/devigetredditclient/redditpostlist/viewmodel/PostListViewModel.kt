@@ -12,8 +12,16 @@ import com.caiolandau.devigetredditclient.util.Event
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.*
 
+typealias MakePagedListLivedata = (
+    DataSource.Factory<String, RedditPost>,
+    PagedList.Config
+) -> LiveData<PagedList<RedditPost>>
+
 class PostListViewModel(
-    dependency: Dependency = Dependency()
+    dependency: Dependency = Dependency(),
+    private val makePagedListLiveData: MakePagedListLivedata = { dataSourceFactory, config ->
+        LivePagedListBuilder(dataSourceFactory, config).build()
+    }
 ) : ViewModel() {
 
     class Dependency(
@@ -53,7 +61,7 @@ class PostListViewModel(
             }
 
         val listOfPosts = initListOfPostsOutput(dataSourceFactory, redditPostRepository)
-        val showPostDetails = initShowPostDetailsOutput(listOfPosts)
+        val showPostDetails = initShowPostDetailsOutput()
         val isRefreshing =
             initOutputIsRefreshing(redditPostRepository, listOfPosts, errorLoadingPage)
         val clearedAll = initOutputClearedAll()
@@ -82,8 +90,8 @@ class PostListViewModel(
     ).map { Event(Unit) }.asLiveData(viewModelScope.coroutineContext)
 
     private fun initOutputClearedAll() = input.onClickDismissAll.asFlow()
-            .map { Event(Unit) }
-            .asLiveData(viewModelScope.coroutineContext)
+        .map { Event(Unit) }
+        .asLiveData(viewModelScope.coroutineContext)
 
 
     private fun initOutputIsRefreshing(
@@ -135,15 +143,17 @@ class PostListViewModel(
                 this.value = it
             }
 
-            addSource(merge(
-                onRefreshFlow, onErrorLoadingPageFlow
-            ).asLiveData(viewModelScope.coroutineContext)) {
+            addSource(
+                merge(
+                    onRefreshFlow, onErrorLoadingPageFlow
+                ).asLiveData(viewModelScope.coroutineContext)
+            ) {
                 this.value = it
             }
         }
     }
 
-    private fun initShowPostDetailsOutput(listOfPosts: LiveData<PagedList<RedditPost>>) =
+    private fun initShowPostDetailsOutput() =
         input.onClickPostListItem.asFlow()
             .asLiveData(viewModelScope.coroutineContext)
 
@@ -155,7 +165,7 @@ class PostListViewModel(
             .setPageSize(PAGE_SIZE)
             .build()
 
-        val pagedList = LivePagedListBuilder(dataSourceFactory, config).build()
+        val pagedList = makePagedListLiveData(dataSourceFactory, config)
 
         input.onClickDismissPost
             .asFlow()
