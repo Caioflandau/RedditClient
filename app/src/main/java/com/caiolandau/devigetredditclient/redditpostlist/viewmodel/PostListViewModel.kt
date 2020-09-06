@@ -80,19 +80,20 @@ class PostListViewModel(
         clearedAll: LiveData<Event<Unit>>,
         showPostDetails: LiveData<RedditPost>
     ) = merge(
+        // When dismissing the currently showing post:
         input.onClickDismissPost.asFlow()
             .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
                 Pair(dismissedPost, currentDetailsPost)
             }
-            .filter { it.first.id == it.second?.id }, // If currently showing the post we're dismissing...
+            .filter { it.first.id == it.second.id },
 
+        // When cleared all posts:
         clearedAll.asFlow()
     ).map { Event(Unit) }.asLiveData(viewModelScope.coroutineContext)
 
     private fun initOutputClearedAll() = input.onClickDismissAll.asFlow()
-        .map { Event(Unit) }
+        .map(::Event)
         .asLiveData(viewModelScope.coroutineContext)
-
 
     private fun initOutputIsRefreshing(
         redditPostRepository: RedditPostRepository,
@@ -144,12 +145,9 @@ class PostListViewModel(
             }
 
             addSource(
-                merge(
-                    onRefreshFlow, onErrorLoadingPageFlow
-                ).asLiveData(viewModelScope.coroutineContext)
-            ) {
-                this.value = it
-            }
+                merge(onRefreshFlow, onErrorLoadingPageFlow)
+                    .asLiveData(viewModelScope.coroutineContext)
+            ) { this.value = it }
         }
     }
 
