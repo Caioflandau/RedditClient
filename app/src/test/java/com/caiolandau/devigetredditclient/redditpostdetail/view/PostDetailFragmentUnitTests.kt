@@ -40,7 +40,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @FlowPreview
-@ExperimentalCoroutinesApi
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostDetailFragmentUnitTests {
 
     @Rule

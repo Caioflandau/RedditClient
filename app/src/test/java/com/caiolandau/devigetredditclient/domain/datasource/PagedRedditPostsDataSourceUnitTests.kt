@@ -8,6 +8,7 @@ import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
@@ -15,6 +16,7 @@ import org.junit.Test
 
 import org.junit.Assert.*
 
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PagedRedditPostsDataSourceUnitTests {
     @MockK private lateinit var mockRepo: RedditPostRepository
     @MockK private lateinit var mockOnErrorCallback: () -> Unit

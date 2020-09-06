@@ -12,6 +12,7 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
@@ -21,7 +22,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-@ExperimentalCoroutinesApi
+@FlowPreview
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostListViewModelUnitTests {
 
     @Rule
@@ -106,14 +108,14 @@ class PostListViewModelUnitTests {
     fun test_showPostDetails() = runBlockingTest {
         val subject = makeSubject()
 
-        val observer: (RedditPost) -> Unit = {}
+        val observer: (Event<RedditPost>) -> Unit = {}
         subject.output.showPostDetails
             .observeForever(observer)
 
         val mockPost = mockk<RedditPost>()
         subject.input.onClickPostListItem.send(mockPost)
 
-        assertEquals(mockPost, subject.output.showPostDetails.value)
+        assertEquals(mockPost, subject.output.showPostDetails.value?.peekContent())
 
         subject.output.showPostDetails.removeObserver(observer)
     }
@@ -255,7 +257,7 @@ class PostListViewModelUnitTests {
     }
 
     private fun makeSubject() = PostListViewModel(
-        PostListViewModel.Dependency(mockRedditPostRepository),
+        mockRedditPostRepository,
         makePagedListLiveData = { _, _ -> listOfPostsLiveData }
     )
 }

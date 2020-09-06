@@ -39,7 +39,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @FlowPreview
-@ExperimentalCoroutinesApi
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostListActivityUnitTests {
     @Rule
     @JvmField
@@ -295,15 +295,15 @@ class PostListActivityUnitTests {
         every { mockPagedList.contains(mockRedditPost) } returns true
 
         // Mock the output we're testing:
-        val showPostDetailsOutput = MutableLiveData<RedditPost>()
+        val showPostDetailsOutput = MutableLiveData<Event<RedditPost>>()
         every { mockViewModel.output.showPostDetails } returns showPostDetailsOutput
-        val observer: (RedditPost) -> Unit = {}
+        val observer: (Event<RedditPost>) -> Unit = {}
 
         val subject = makeSubject()
         showPostDetailsOutput.observeForever(observer)
         setupSubject(subject)
 
-        showPostDetailsOutput.postValue(mockRedditPost)
+        showPostDetailsOutput.postValue(Event(mockRedditPost))
 
         verify(exactly = 1) { mockFragmentTransaction.replace(any(), mockPostDetailFragment) }
         verify(exactly = 1) { mockFragmentTransaction.commit() }
@@ -330,9 +330,9 @@ class PostListActivityUnitTests {
         every { mockActivity.context } returns mockContext
 
         // Mock the output we're testing:
-        val showPostDetailsOutput = MutableLiveData<RedditPost>()
+        val showPostDetailsOutput = MutableLiveData<Event<RedditPost>>()
         every { mockViewModel.output.showPostDetails } returns showPostDetailsOutput
-        val observer: (RedditPost) -> Unit = {}
+        val observer: (Event<RedditPost>) -> Unit = {}
 
         // Mock PostDetailActivity.newIntent(..):
         val mockIntent = mockk<Intent>()
@@ -344,7 +344,7 @@ class PostListActivityUnitTests {
         setupSubject(subject)
 
         // Emit the output we're testing:
-        showPostDetailsOutput.postValue(mockRedditPost)
+        showPostDetailsOutput.postValue(Event(mockRedditPost))
 
         verify { mockContext.startActivity(mockIntent) }
 

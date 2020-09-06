@@ -1,5 +1,6 @@
 package com.caiolandau.devigetredditclient.domain.api
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.mockwebserver.MockResponse
@@ -11,6 +12,7 @@ import org.junit.Test
 import retrofit2.HttpException
 import java.io.BufferedReader
 
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 @Suppress("BlockingMethodInNonBlockingContext") // This is fine in a unit test
 class ApiUnitTests {
     private lateinit var mockWebServer: MockWebServer
@@ -66,7 +68,7 @@ class ApiUnitTests {
     private fun makeSubject(redditBaseUrl: String) = Api(redditBaseUrl = redditBaseUrl)
 
     private fun readFileToString(filename: String): String {
-        val stream = javaClass.classLoader?.getResourceAsStream("reddit_posts_response.json")
+        val stream = javaClass.classLoader?.getResourceAsStream(filename)
             ?: throw Exception("Could not read JSON from $filename")
 
         return stream.bufferedReader().use(BufferedReader::readText)

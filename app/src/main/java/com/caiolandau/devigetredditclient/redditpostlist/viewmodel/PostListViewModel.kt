@@ -43,7 +43,7 @@ class PostListViewModel(
      */
     class Output(
         val listOfPosts: LiveData<PagedList<RedditPost>>,
-        val showPostDetails: LiveData<RedditPost>,
+        val showPostDetails: LiveData<Event<RedditPost>>,
         val closePostDetails: LiveData<Event<Unit>>,
         val errorLoadingPage: LiveData<Event<Unit>>,
         val isRefreshing: LiveData<Boolean>,
@@ -78,12 +78,12 @@ class PostListViewModel(
 
     private fun initClosePostDetails(
         clearedAll: LiveData<Event<Unit>>,
-        showPostDetails: LiveData<RedditPost>
+        showPostDetails: LiveData<Event<RedditPost>>
     ) = merge(
         // When dismissing the currently showing post:
         input.onClickDismissPost.asFlow()
             .combine(showPostDetails.asFlow()) { dismissedPost, currentDetailsPost ->
-                Pair(dismissedPost, currentDetailsPost)
+                Pair(dismissedPost, currentDetailsPost.peekContent())
             }
             .filter { it.first.id == it.second.id },
 
@@ -153,6 +153,7 @@ class PostListViewModel(
 
     private fun initShowPostDetailsOutput() =
         input.onClickPostListItem.asFlow()
+            .map(::Event)
             .asLiveData(viewModelScope.coroutineContext)
 
     private fun initListOfPostsOutput(

@@ -7,6 +7,7 @@ import com.caiolandau.devigetredditclient.domain.model.RedditPostPage
 import com.caiolandau.devigetredditclient.domain.repository.converter.RedditPostsResponseToRedditPostsPageConverter
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
 import org.junit.Test
@@ -15,6 +16,7 @@ import org.junit.Assert.*
 import retrofit2.HttpException
 import java.util.*
 
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class RedditPostRepositoryUnitTests {
 
     @MockK

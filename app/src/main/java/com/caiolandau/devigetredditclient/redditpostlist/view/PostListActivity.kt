@@ -19,6 +19,8 @@ import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import kotlinx.android.synthetic.main.activity_post_list.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.sendBlocking
 import java.lang.ref.WeakReference
 
@@ -30,6 +32,8 @@ import java.lang.ref.WeakReference
  * On tablets, the activity presents the list of items and item details side-by-side
  * using two vertical panes.
  */
+@FlowPreview
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostListActivityWrapper(
     activity: IViewModelActivity<PostListViewModel>,
     private val snackbarHelper: SnackbarHelper = SnackbarHelper(),
@@ -117,12 +121,13 @@ class PostListActivityWrapper(
             }
 
         viewModel.output.showPostDetails
-            .observe(lifecycleOwner()) { post ->
-                val post = post
+            .observe(lifecycleOwner()) { postEvent ->
+                val post = postEvent.getContentIfNotHandled()
                 if (viewModel.output.listOfPosts.value?.contains(post) == true) {
                     if (twoPane) {
-                        showDetailsFragment(post)
+                        showDetailsFragment(postEvent.peekContent())
                     } else {
+                        post ?: return@observe
                         showDetailsActivity(post)
                     }
                 }
@@ -197,6 +202,8 @@ class PostListActivityWrapper(
     }
 }
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class PostListActivity : AppCompatActivity(), IViewModelActivity<PostListViewModel> {
     // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
