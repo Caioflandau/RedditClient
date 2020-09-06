@@ -29,7 +29,7 @@ Here's how it works in more details:
 - The `Output` instance exposes [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) objects that represent UI elements to be displayed/handled by the `View`
 - All business logic resides in the `ViewModel`. The `View` simply displays data and proxies events
 - List pagination is done using a `PagedListAdapter`. This is part of Android's Architecture Components along with `PagedList`
-- Dependency injection was implemented as simple constructor-injection. In order to keep the project to-the-pint, a library like Hilt/Dagger was not used for this
+- Dependency injection was implemented as simple constructor-injection. In order to keep the project to-the-point, a library like Hilt/Dagger was not used for this
 
 ## Data layer
 The data layer is composed of:
