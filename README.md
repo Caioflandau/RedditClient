@@ -46,9 +46,13 @@ The data layer is composed of:
 ## Assumptions made
 - App supports the latest available Android version (API 29)
 - There's a hard cap of 50 posts maximum. When paging reaches 50, it will stop loading more posts (as per assignment)
+- Animations were included when dismissing one single post and when dismissing all. The former is a slide-dismiss and the latter is a quick fade-out
 
 ## Running the project
 - **App**: Just open on Android Studio and run the `app` configuration
 - **Tests**: Running the full suite is simply a matter of:
   - Right-click the top-level package that is marked with `(test)`
   - Click `Run tests in ...`
+
+## Demo video
+Check the file called `Demo.mov` at the root of this repository for a demo video!
