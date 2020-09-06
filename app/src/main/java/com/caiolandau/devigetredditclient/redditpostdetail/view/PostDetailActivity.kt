@@ -58,13 +58,6 @@ class PostDetailActivityWrapper(
 
     fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         android.R.id.home -> {
-
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-
             activity?.apply {
                 navigateUpTo(Intent(context, PostListActivity::class.java))
             }
@@ -77,7 +70,7 @@ class PostDetailActivityWrapper(
 class PostDetailActivity : AppCompatActivity(), IActivity {
     // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
-    // Activity business logic. The actual Activity subclass is just a shell.
+    // Activity logic. The actual Activity subclass is just a shell.
     private val activityWrapper = PostDetailActivityWrapper(this)
     override val context = this
 

@@ -17,8 +17,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
-import kotlin.random.Random
 
 @ExperimentalCoroutinesApi
 class PostDetailViewModelUnitTests {
@@ -43,7 +41,7 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_postImageUrl() = runBlockingTest {
-        val subject = makeSubject(makeRedditPost(imageUrl = "https://aaa.com/bbb.jpg"))
+        val subject = makeSubject(makeRedditPost(url = "https://aaa.com/bbb.jpg"))
         val observer: (t: String?) -> Unit = {}
         subject.output.postImageUrl.observeForever(observer)
 
@@ -56,7 +54,7 @@ class PostDetailViewModelUnitTests {
     fun test_postImageUrl_whenImageFails_fallbackToThumbnail() = runBlockingTest {
         val subject = makeSubject(
             makeRedditPost(
-                imageUrl = "https://aaa.com/bbb.jpg",
+                url = "https://aaa.com/bbb.jpg",
                 thumbnailUrl = "https://thumb.com/image.jpg"
             )
         )
@@ -77,7 +75,7 @@ class PostDetailViewModelUnitTests {
 
     @Test
     fun test_openExternal_openUrl() = runBlockingTest {
-        val subject = makeSubject(makeRedditPost(imageUrl = "https://test.url.com/"))
+        val subject = makeSubject(makeRedditPost(url = "https://test.url.com/"))
         val observer: (t: Event<Uri>?) -> Unit = {}
         subject.output.openExternal.observeForever(observer)
 

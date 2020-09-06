@@ -9,6 +9,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.*
 
+@FlowPreview
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostDetailViewModel(
     post: RedditPost
 ) : ViewModel() {
@@ -22,9 +24,10 @@ class PostDetailViewModel(
         val onClickSaveImage: BroadcastChannel<Unit> = BroadcastChannel(1)
         val onErrorLoadingImage: BroadcastChannel<Unit> = BroadcastChannel(1)
     }
+    
 
     /**
-     * Represents outputs - i.e. posts title - to be presented/handled by the view
+     * Represents outputs - i.e. post title - to be presented/handled by the view
      */
     class Output(
         val postTitle: LiveData<String>,
@@ -52,7 +55,7 @@ class PostDetailViewModel(
     private fun initPostImageUrl(post: RedditPost): LiveData<String?> {
         // Tries the main "URL" in the post, which can be the full-size image if one is available.
         // If that fails (i.e. it's not an image), falls back to the thumbnail instead:
-        val imageUrlFlow = flow { emit(post.imageUrl) }
+        val imageUrlFlow = flow { emit(post.url) }
         val errorLoadingImageFlow = input.onErrorLoadingImage.asFlow()
             .map { post.thumbnailUrl }
 
@@ -71,8 +74,8 @@ class PostDetailViewModel(
     private fun initOpenMediaExternal(post: RedditPost) = merge(
         input.onClickOpenExternal.asFlow()
             .map { post }
-            .filter { it.imageUrl != null }
-            .map { Uri.parse(it.imageUrl!!) } // Force-unwrapping is safe because we filter above
+            .filter { it.url != null }
+            .map { Uri.parse(it.url!!) } // Force-unwrapping is safe because we filter above
             .map(::Event),
 
         input.onClickOpenReddit.asFlow()

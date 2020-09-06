@@ -270,7 +270,7 @@ class RedditPostRepositoryUnitTests {
         selfText = UUID.randomUUID().toString(),
         permalink = UUID.randomUUID().toString(),
         entryDate = "12/12/2020",
-        imageUrl = "https://some-image.com/image.png",
+        url = "https://some-image.com/image.png",
         thumbnailUrl = "https://some-image.com/thumb.png",
         numOfComments = Random().nextInt(),
         isRead = false

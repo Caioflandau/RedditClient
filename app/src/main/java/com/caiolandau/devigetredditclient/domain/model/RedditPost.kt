@@ -11,7 +11,7 @@ class RedditPost(
     val selfText: String?,
     val permalink: String,
     val entryDate: String,
-    val imageUrl: String?,
+    val url: String?,
     val thumbnailUrl: String?,
     val numOfComments: Int,
     var isRead: Boolean = false
@@ -38,7 +38,7 @@ class RedditPost(
         parcel.writeString(selfText)
         parcel.writeString(permalink)
         parcel.writeString(entryDate)
-        parcel.writeString(imageUrl)
+        parcel.writeString(url)
         parcel.writeString(thumbnailUrl)
         parcel.writeInt(numOfComments)
         parcel.writeByte(if (isRead) 1 else 0)
@@ -61,7 +61,7 @@ class RedditPost(
         if (selfText != other.selfText) return false
         if (permalink != other.permalink) return false
         if (entryDate != other.entryDate) return false
-        if (imageUrl != other.imageUrl) return false
+        if (url != other.url) return false
         if (thumbnailUrl != other.thumbnailUrl) return false
         if (numOfComments != other.numOfComments) return false
         if (isRead != other.isRead) return false
@@ -77,7 +77,7 @@ class RedditPost(
         result = 31 * result + (selfText?.hashCode() ?: 0)
         result = 31 * result + permalink.hashCode()
         result = 31 * result + entryDate.hashCode()
-        result = 31 * result + (imageUrl?.hashCode() ?: 0)
+        result = 31 * result + (url?.hashCode() ?: 0)
         result = 31 * result + (thumbnailUrl?.hashCode() ?: 0)
         result = 31 * result + numOfComments
         result = 31 * result + isRead.hashCode()
@@ -94,6 +94,5 @@ class RedditPost(
             return arrayOfNulls(size)
         }
     }
-
 
 }

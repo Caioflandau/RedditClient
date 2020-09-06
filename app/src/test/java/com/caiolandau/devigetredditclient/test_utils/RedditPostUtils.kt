@@ -13,7 +13,7 @@ fun makeRedditPost(
     selfText: String? = UUID.randomUUID().toString(),
     permalink: String = "/r/aaa/${UUID.randomUUID()}",
     entryDate: String = UUID.randomUUID().toString(),
-    imageUrl: String? = "https://url.com/${UUID.randomUUID()}",
+    url: String? = "https://url.com/${UUID.randomUUID()}",
     thumbnailUrl: String? = "https://thumb.url.com/${UUID.randomUUID()}",
     numOfComments: Int = Random.nextInt(),
     isRead: Boolean = false
@@ -25,7 +25,7 @@ fun makeRedditPost(
     selfText = selfText,
     permalink = permalink,
     entryDate = entryDate,
-    imageUrl = imageUrl,
+    url = url,
     thumbnailUrl = thumbnailUrl,
     numOfComments = numOfComments,
     isRead = isRead

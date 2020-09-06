@@ -9,6 +9,8 @@ import com.caiolandau.devigetredditclient.domain.datasource.PagedRedditPostsData
 import com.caiolandau.devigetredditclient.domain.model.RedditPost
 import com.caiolandau.devigetredditclient.domain.repository.RedditPostRepository
 import com.caiolandau.devigetredditclient.util.Event
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.*
 
@@ -17,16 +19,14 @@ typealias MakePagedListLivedata = (
     PagedList.Config
 ) -> LiveData<PagedList<RedditPost>>
 
+@FlowPreview
+@ExperimentalCoroutinesApi // Coroutines / Flow are still marked as experimental, although they are considered stable enough
 class PostListViewModel(
-    dependency: Dependency = Dependency(),
+    redditPostRepository: RedditPostRepository = RedditPostRepository(Api().reddit),
     private val makePagedListLiveData: MakePagedListLivedata = { dataSourceFactory, config ->
         LivePagedListBuilder(dataSourceFactory, config).build()
     }
 ) : ViewModel() {
-
-    class Dependency(
-        val redditPostRepository: RedditPostRepository = RedditPostRepository(Api().reddit)
-    )
 
     /**
      * Represents input events - i.e. list item clicks - that are possible from the view:
@@ -51,7 +51,7 @@ class PostListViewModel(
     )
 
     val input: Input = Input()
-    val output: Output = initOutput(dependency.redditPostRepository)
+    val output: Output = initOutput(redditPostRepository)
 
     private fun initOutput(redditPostRepository: RedditPostRepository): Output {
         val errorLoadingPage = MutableLiveData<Event<Unit>>()

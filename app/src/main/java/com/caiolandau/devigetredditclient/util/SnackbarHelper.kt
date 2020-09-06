@@ -11,6 +11,6 @@ class SnackbarHelper {
         @StringRes message: Int,
         length: Int = Snackbar.LENGTH_LONG
     ) =
-        Snackbar.make(view, R.string.image_saved_success_message, Snackbar.LENGTH_LONG)
+        Snackbar.make(view, message, length)
             .show()
 }

@@ -28,7 +28,7 @@ class RedditPostsResponseToRedditPostsPageConverter(
                     permalink = it.data.permalink,
                     author = it.data.author,
                     entryDate = epochToRelativeTimeConverter.convert(it.data.createdUtc),
-                    imageUrl = it.data.url,
+                    url = it.data.url,
                     thumbnailUrl = getThumbnailUrl(it),
                     numOfComments = it.data.numComments
                 )
@@ -39,7 +39,7 @@ class RedditPostsResponseToRedditPostsPageConverter(
     private fun getThumbnailUrl(responseChild: RedditPostsResponseChild): String? {
         val preview = responseChild.data.preview
         if (preview != null) {
-            // For some unknown reason, image preview URLs are HTML-encoded in the JSON.
+            // For some unknown reason, image preview URLs are HTML-encoded in the Reddit API's response.
             // This decodes it. Example: &amp; becomes &
             return Html.fromHtml(preview.images.firstOrNull()?.source?.url, 0)
                 .toString()

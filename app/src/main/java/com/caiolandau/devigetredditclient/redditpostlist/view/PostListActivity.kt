@@ -1,8 +1,6 @@
 package com.caiolandau.devigetredditclient.redditpostlist.view
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +18,6 @@ import com.caiolandau.devigetredditclient.redditpostlist.viewmodel.PostListViewM
 import com.caiolandau.devigetredditclient.util.IViewModelActivity
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_post_list.*
 import kotlinx.coroutines.channels.sendBlocking
 import java.lang.ref.WeakReference
@@ -80,9 +77,6 @@ class PostListActivityWrapper(
             onItemClickListener = {
                 viewModel.input.onClickPostListItem.sendBlocking(it)
             }
-        }
-
-        adapter?.apply {
             onDismissListener = {
                 viewModel.input.onClickDismissPost.sendBlocking(it)
             }
@@ -206,7 +200,7 @@ class PostListActivityWrapper(
 class PostListActivity : AppCompatActivity(), IViewModelActivity<PostListViewModel> {
     // In order to avoid needing something like Robolectric to test activity logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
-    // Activity business logic. The actual Activity subclass is just a shell.
+    // Activity logic. The actual Activity subclass is just a shell.
     private val activityWrapper = PostListActivityWrapper(this)
     override val context
         get() = this

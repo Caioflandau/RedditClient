@@ -51,7 +51,7 @@ class RedditPostsResponseToRedditPostsPageConverterUnitTests {
                 selfText = it.selfText,
                 permalink = it.permalink,
                 entryDate = "12 hours ago",
-                imageUrl = it.url,
+                url = it.url,
                 thumbnailUrl = it.thumbnail,
                 numOfComments = it.numComments,
                 isRead = false

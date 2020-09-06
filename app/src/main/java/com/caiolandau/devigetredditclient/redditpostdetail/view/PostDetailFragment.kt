@@ -1,6 +1,5 @@
 package com.caiolandau.devigetredditclient.redditpostdetail.view
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +11,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import coil.Coil
@@ -24,14 +22,13 @@ import com.caiolandau.devigetredditclient.redditpostdetail.viewmodel.PostDetailV
 import com.caiolandau.devigetredditclient.util.IFragment
 import com.caiolandau.devigetredditclient.util.LocalImageSaver
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.channels.sendBlocking
 import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 
 /**
  * A fragment representing a single post detail screen.
- * This fragment is either contained in a [PostListActivity] in two-pane mode (on tablets)
+ * This fragment is either contained in a PostListActivity in two-pane mode (on tablets)
  * or a [PostDetailActivity] on handsets.
  */
 
@@ -153,7 +150,7 @@ class PostDetailFragmentWrapper(
 class PostDetailFragment : Fragment(), IFragment<RedditPost, PostDetailViewModel> {
     // In order to avoid needing something like Robolectric to test fragment logic, we use a wrapper
     // class. That wrapper is just a regular class that can be instantiated easily, and contains all
-    // Fragment business logic. The actual Fragment subclass is just a shell.
+    // Fragment logic. The actual Fragment subclass is just a shell.
     private val fragmentWrapper: PostDetailFragmentWrapper by lazy {
         val ctx = context ?: throw IllegalStateException("No context when trying to create wrapper!")
         PostDetailFragmentWrapper(this, Coil.imageLoader(ctx))
@@ -183,13 +180,13 @@ class PostDetailFragment : Fragment(), IFragment<RedditPost, PostDetailViewModel
         )
     }
 
-    override fun getViewModel(post: RedditPost): PostDetailViewModel {
+    override fun getViewModel(data: RedditPost): PostDetailViewModel {
         // ViewModels are created once per scope (i.e. Fragment) and reused for as long as the scope
         // is alive. It's fine to use `by viewModels()` every time instead of holding an instance of
         // the ViewModel:
         val viewModel: PostDetailViewModel by viewModels(factoryProducer = {
             PostDetailFragmentWrapper.ViewModelFactory(
-                post
+                data
             )
         })
         return viewModel
