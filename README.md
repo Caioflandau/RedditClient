@@ -1,5 +1,5 @@
 # Reddit Client
-This app is a simple Reddit client that displays (up to) the top 50 posts from Reddit's `top` posts. The 
+This app is a simple Reddit client that displays (up to) the top 50 posts from Reddit's `top` posts.
 
 It serves as a demo of an MVVM architecture using Coroutines and Flow (more architecture details below)
 
