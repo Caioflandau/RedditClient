@@ -23,7 +23,6 @@ import com.caiolandau.devigetredditclient.util.IFragment
 import com.caiolandau.devigetredditclient.util.LocalImageSaver
 import com.caiolandau.devigetredditclient.util.SnackbarHelper
 import kotlinx.coroutines.channels.sendBlocking
-import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 
 /**
